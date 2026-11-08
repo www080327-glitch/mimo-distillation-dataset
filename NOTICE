@@ -1,0 +1,12 @@
+MiMo Distillation Dataset (independent community release)
+
+The Apache License 2.0 applies to the original compilation, schema, and
+project-authored contributions to the extent the contributors can license them.
+No proprietary model weights, provider software, or third-party materials are
+relicensed by this notice.
+
+Text, example code, and some page renders are AI-generated or AI-assisted.
+The teacher field records the actual MiMo model where known. The authors make
+no claim of exclusive rights in machine-generated output or affiliation with
+the model provider. Third-party media retain their source-level notices and
+rights designations; see the per-record provenance.
