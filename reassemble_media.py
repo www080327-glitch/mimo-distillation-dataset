@@ -48,13 +48,14 @@ def main():
             result = args.out / asset
             if result.exists():
                 raise FileExistsError(result)
-            with tempfile.NamedTemporaryFile(dir=args.out, delete=False) as f:
-                work = Path(f.name)
-                try:
+            work = None
+            try:
+                with tempfile.NamedTemporaryFile(dir=args.out, delete=False) as f:
+                    work = Path(f.name)
                     verify(entry, args.manifest.parent, f)
-                    f.flush()
-                    work.rename(result)
-                finally:
+                work.rename(result)
+            finally:
+                if work is not None:
                     work.unlink(missing_ok=True)
         else:
             verify(entry, args.manifest.parent, None)
