@@ -122,6 +122,8 @@ python3 check_abc_release.py RELEASE.tar.gz MANIFEST.json SHA256SUMS
 
 This verifies both pinned files and checks that the archive contains the
 same manifest. It does not download or run the archived projects.
+If you renamed the local TAR, pass the published filename with
+`--asset-name ORIGINAL_NAME` to select its exact checksum entry.
 
 For a release-wide version-chain check, run `audit_replay_history.py`
 on the local archive. This compares recorded references to the retained

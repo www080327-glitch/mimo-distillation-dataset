@@ -9,10 +9,12 @@ import tarfile
 from abc_release import release_version
 from download_abc_bases import embedded_manifest
 from download_release import checksum, digest
+from reassemble_media import name
 
 
-def check(archive, manifest, sums):
-    archive_pin = checksum(sums, archive.name)
+def check(archive, manifest, sums, asset_name=None):
+    official_name = archive.name if asset_name is None else name(asset_name)
+    archive_pin = checksum(sums, official_name)
     manifest_pin = checksum(sums, "MANIFEST.json")
     if digest(archive) != archive_pin:
         raise ValueError("Archive SHA-256 differs from the release checksums")
@@ -35,9 +37,10 @@ def main():
     p.add_argument("archive", type=Path)
     p.add_argument("manifest", type=Path)
     p.add_argument("sha256sums", type=Path)
+    p.add_argument("--asset-name", help="Original release filename if the local archive was renamed")
     args = p.parse_args()
     try:
-        report = check(args.archive, args.manifest, args.sha256sums)
+        report = check(args.archive, args.manifest, args.sha256sums, args.asset_name)
     except (OSError, ValueError, TypeError, KeyError, tarfile.TarError, EOFError) as exc:
         p.exit(1, f"Release check failed: {exc}\n")
     print(json.dumps(report, indent=2))

@@ -241,6 +241,11 @@ class ReleaseToolsTest(unittest.TestCase):
                                         for path in (source, manifest)))
             write_sums()
             self.assertTrue(check_release(source, manifest, sums)["verified"])
+            renamed = t / "renamed archive.tar.gz"
+            renamed.write_bytes(source.read_bytes())
+            with self.assertRaisesRegex(ValueError, "named asset"):
+                check_release(renamed, manifest, sums)
+            self.assertTrue(check_release(renamed, manifest, sums, source.name)["verified"])
             manifest.write_bytes(manifest.read_bytes() + b"\n")
             with self.assertRaisesRegex(ValueError, "Standalone MANIFEST.json SHA-256"):
                 check_release(source, manifest, sums)
