@@ -92,7 +92,7 @@ class ReassemblyTests(unittest.TestCase):
 
     def test_missing_later_part_removes_partial_work(self):
         (self.root / self.split["parts"][1]["name"]).unlink()
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaisesRegex(FileNotFoundError, r"bundle.bin: missing download.*part02"):
             self.cli([self.split])
         self.assert_no_publication()
 
@@ -138,12 +138,19 @@ class ReassemblyTests(unittest.TestCase):
                 self.cli([self.split])
         self.assert_no_publication()
 
+    def test_retry_uses_verified_output_without_chunks(self):
+        self.cli([self.split])
+        for part in self.split["parts"]:
+            (self.root / part["name"]).unlink()
+        self.assertEqual(self.cli([self.split]), "Verified: bundle.bin\n")
+        self.assertEqual((self.out / self.split["name"]).read_bytes(), self.joined)
+
     def test_existing_output_is_preserved(self):
         self.out.mkdir()
         result = self.out / self.split["name"]
         result.write_bytes(b"keep existing output")
 
-        with self.assertRaises(FileExistsError):
+        with self.assertRaisesRegex(ValueError, "Bad chunk: bundle.bin"):
             self.cli([self.split])
 
         self.assertEqual(result.read_bytes(), b"keep existing output")
