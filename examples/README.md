@@ -86,3 +86,29 @@ original v1.2.0 archive to verify its ten IDs; its manifest does not list them.
 ```sh
 python3 audit_abc_releases.py manifests/*.json --legacy-archive mimo-nextgen-abc-v1.tar.gz
 ```
+
+The base planner also accepts an archive in place of `MANIFEST.json`; that
+reads only the embedded metadata and does not certify the archive contents.
+To see which local archives actually provide the assets for a selection, use
+`export_replay.py --plan` instead of `--output`, with the same archive,
+`--ids` and repeated `--base-tar` options.
+
+To verify that a sample preserves its parent release's recorded rows and
+referenced assets, provide both archives. Older samples may also need their
+declared bases; self-contained exports do not.
+
+```sh
+python3 verify_replay_sample.py RELEASE.tar.gz portable.tar.gz
+```
+
+### Inspect a recorded step or check a release before sharing it
+
+These commands use already-downloaded archives. Pass the same needed
+`--base-tar` options for the selected episode. A step ZIP contains only
+recorded files; the tool never re-executes the project.
+
+```sh
+python3 restore_replay_step.py RELEASE.tar.gz --episode EPISODE_ID --step 8 --base-tar BASE.tar.gz --output step-8.zip
+python3 verify_abc_tallies.py RELEASE.tar.gz
+python3 smoke_replay_http.py portable.tar.gz --episode EPISODE_ID
+```

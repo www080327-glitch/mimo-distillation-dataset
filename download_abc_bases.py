@@ -6,12 +6,29 @@ from http.client import HTTPException
 import json
 from pathlib import Path
 import re
+import tarfile
 import time
 from urllib.error import HTTPError
 
 from abc_release import base_filename, release_version, reused_bases, undeclared_reuse
 from download_release import REPO, digest, download
 from reassemble_media import name
+
+
+def read_manifest(path):
+    with path.open("rb") as source:
+        compressed = source.read(2) == b"\x1f\x8b"
+        source.seek(0)
+        if not compressed:
+            return json.load(source)
+        with tarfile.open(fileobj=source, mode="r|gz") as archive:
+            for member in archive:
+                if member.name == "MANIFEST.json":
+                    if not member.isfile():
+                        raise ValueError("Embedded MANIFEST.json is not a regular file")
+                    with archive.extractfile(member) as embedded:
+                        return json.load(embedded)
+    raise ValueError("Archive has no embedded MANIFEST.json")
 
 
 def base_plan(manifest):
@@ -71,15 +88,15 @@ def check(entry, directory, fetch):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("manifest", type=Path)
+    p.add_argument("manifest", type=Path, help="MANIFEST.json or an archive with an embedded manifest")
     p.add_argument("directory", type=Path)
     p.add_argument("--fetch", action="store_true", help="Download missing declared bases anonymously")
     args = p.parse_args()
     try:
-        manifest = json.loads(args.manifest.read_text())
+        manifest = read_manifest(args.manifest)
         version = release_version(manifest)
         plan = base_plan(manifest)
-    except (ValueError, OSError, KeyError, TypeError) as exc:
+    except (ValueError, OSError, KeyError, TypeError, tarfile.TarError, EOFError) as exc:
         p.error(str(exc))
     if args.fetch:
         with ThreadPoolExecutor(max_workers=2) as pool:

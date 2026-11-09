@@ -14,7 +14,10 @@ import unittest
 from abc_release import PNG
 from audit_abc_releases import audit
 from download_abc_bases import fetch_base
-from export_replay import export
+from export_replay import export, plan
+from restore_replay_step import workspace_at
+from verify_abc_tallies import verify as verify_tallies
+from verify_replay_sample import verify
 
 TOOLS = Path(__file__).parent
 ID = "a" * 20
@@ -86,6 +89,80 @@ class ReleaseToolsTest(unittest.TestCase):
         self.assertFalse(report["unique_complete"])
         self.assertIsNone(report["cumulative_unique"])
         self.assertEqual(report["issues"], ["v1.9.0: missing production manifest for v1.8.0"])
+
+    def test_sample_verifier_detects_edited_evidence_with_valid_stream_hash(self):
+        with TemporaryDirectory() as tmp:
+            t = Path(tmp)
+            source, exported, changed = (t / name for name in ("source.tar.gz", "sample.tar.gz", "changed.tar.gz"))
+            sample(source, remove_digest=False)
+            export(source, (), {ID: None}, exported)
+            self.assertTrue(verify(source, exported)["verified"])
+            with tarfile.open(exported) as archive:
+                files = {member.name: archive.extractfile(member).read() for member in archive}
+            stream = "final_task_to_html.jsonl"
+            row = json.loads(files[stream])
+            row["status"] = "failed"
+            files[stream] = (json.dumps(row) + "\n").encode()
+            manifest = json.loads(files["MANIFEST.json"])
+            manifest["files"][stream] = {"bytes": len(files[stream]), "sha256": hashlib.sha256(files[stream]).hexdigest()}
+            files["MANIFEST.json"] = json.dumps(manifest).encode()
+            with tarfile.open(changed, "w:gz") as archive:
+                for name, data in files.items():
+                    member = tarfile.TarInfo(name)
+                    member.size = len(data)
+                    archive.addfile(member, io.BytesIO(data))
+            result = verify(source, changed)
+            self.assertFalse(result["verified"])
+            self.assertEqual(result["issues"], [{"id": ID, "stream": "final_task_to_html", "error": "Recorded rows differ"}])
+
+    def test_embedded_manifest_plan_and_selected_archive_plan(self):
+        with TemporaryDirectory() as tmp:
+            t = Path(tmp)
+            archive = t / "source.tar.gz"
+            sample(archive, remove_digest=False)
+            p = subprocess.run([sys.executable, str(TOOLS / "download_abc_bases.py"), str(archive), str(t)],
+                               capture_output=True, text=True, timeout=10)
+            self.assertEqual(p.returncode, 0, p.stderr)
+            self.assertEqual(json.loads(p.stdout)["replay_args"], [])
+            selected = plan(archive, [t / "unused.tar.gz"], {ID: None})
+            self.assertEqual(selected["archives"], [{"path": str(archive), "assets": 2}])
+            self.assertEqual(selected["selected_ids"], [ID])
+
+    def test_recorded_workspace_does_not_unlock_future_files(self):
+        initial = asset(b"initial", "html")
+        edited = asset(b"edited", "html")
+        requirement = asset(b"new requirement", "md")
+        rows = {
+            "full_trajectory": [{"turns": [{"step": 1}, {"step": 2}]}],
+            "final_task_to_html": [{"starting_files": {"index.html": initial},
+                                    "runtime_requirements": {"release-01.md": {"released_after_step": 2, "asset": requirement}}}],
+            "single_edit": [{"step": 1, "file": "index.html", "audit_assets": {"before": initial, "after": edited}}],
+            "observations": [],
+        }
+        self.assertEqual(workspace_at(rows, 1), {"index.html": edited})
+        self.assertEqual(workspace_at(rows, 2), {"index.html": edited, "release-01.md": requirement})
+        rows["single_edit"][0]["audit_assets"]["before"] = edited
+        with self.assertRaisesRegex(ValueError, "version gap"):
+            workspace_at(rows, 1)
+
+    def test_tally_verifier_does_not_trust_manifest_counts(self):
+        with TemporaryDirectory() as tmp:
+            t = Path(tmp)
+            source, altered = t / "source.tar.gz", t / "altered.tar.gz"
+            sample(source, remove_digest=False)
+            with tarfile.open(source) as archive:
+                files = {member.name: archive.extractfile(member).read() for member in archive}
+            manifest = json.loads(files["MANIFEST.json"])
+            manifest["by_focus_and_state"] = {"C/completed": 2}
+            files["MANIFEST.json"] = json.dumps(manifest).encode()
+            with tarfile.open(altered, "w:gz") as archive:
+                for name, data in files.items():
+                    member = tarfile.TarInfo(name)
+                    member.size = len(data)
+                    archive.addfile(member, io.BytesIO(data))
+            result = verify_tallies(altered)
+            self.assertFalse(result["verified"])
+            self.assertEqual(result["differences"], {"C/completed": {"declared": 2, "recorded": 1}})
 
     def test_base_planner_requires_primary_release_version(self):
         with TemporaryDirectory() as tmp:

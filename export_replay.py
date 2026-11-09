@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Create a portable, self-contained sample from explicitly selected public A/B/C episodes."""
 import argparse
-from contextlib import ExitStack
+from collections import Counter
+from contextlib import ExitStack, contextmanager
 import gzip
 import io
 import json
@@ -10,7 +11,7 @@ from pathlib import Path
 import tarfile
 from tempfile import TemporaryDirectory
 
-from abc_release import Archive, Assets, STREAMS, base_hint, episode, load_groups, read_spooled, references, release_version
+from abc_release import Archive, Assets, STREAMS, base_hint, episode, load_groups, open_needed_bases, read_spooled, references, release_version
 from download_release import digest
 
 
@@ -20,47 +21,55 @@ def tar_bytes(tar, name, data):
     tar.addfile(item, io.BytesIO(data))
 
 
-def export(source, bases, ids, output):
-    if output.exists():
-        raise ValueError("Output already exists")
+@contextmanager
+def verified_selection(source, bases, ids):
     if not ids:
         raise ValueError("At least one episode ID is required")
     with ExitStack() as stack:
         primary = Archive(stack, source)
         manifest = json.loads(primary.read("MANIFEST.json"))
-        version = release_version(manifest)
+        release_version(manifest)
         spool = Path(stack.enter_context(TemporaryDirectory()))
         chosen = load_groups(primary, manifest, ids, spool)
         unresolved = {ref["file"] for ident in chosen for ref in references(read_spooled(spool / ident))}
         unresolved.difference_update(primary.members)
-        base_archives, seen = [], set()
-        for path in bases:
-            if not unresolved:
-                break
-            path = path.resolve()
-            if path not in seen:
-                seen.add(path)
-                base = Archive(stack, path)
-                base_archives.append(base)
-                unresolved.difference_update(base.members)
-        assets = Assets([primary, *base_archives], None, base_hint(manifest, base_archives))
-        staged = Path(stack.enter_context(TemporaryDirectory(dir=output.parent)))
-        archive = staged / "sample.tar.gz"
+        opened = [(source.absolute(), primary), *open_needed_bases(stack, bases, unresolved)]
+        archives = [arc for _, arc in opened]
+        assets = Assets(archives, None, base_hint(manifest, archives[1:]))
         refs = {}
+        for ident in chosen:
+            rows = read_spooled(spool / ident)
+            _, receipt = episode(ident, rows, assets, None)
+            if receipt["errors"]:
+                raise ValueError(f"{ident}: " + "; ".join(receipt["errors"]))
+            for ref in references(rows):
+                # Check every occurrence, including repeated PNG dimensions, before deduplicating.
+                assets.get(ref)
+                refs.setdefault(ref["file"], ref)
+        yield manifest, spool, chosen, refs, assets, opened
+
+
+def plan(source, bases, ids):
+    with verified_selection(source, bases, ids) as (manifest, _, chosen, refs, _, opened):
+        counts = Counter(next(path for path, archive in opened if name in archive.members) for name in refs)
+        return {"source": manifest["version"], "selected_ids": list(chosen), "assets": len(refs),
+                "archives": [{"path": str(path), "assets": counts[path]} for path, _ in opened if counts[path]]}
+
+
+def export(source, bases, ids, output):
+    if output.exists():
+        raise ValueError("Output already exists")
+    with (verified_selection(source, bases, ids) as (manifest, spool, chosen, refs, assets, opened),
+          TemporaryDirectory(dir=output.parent) as directory):
+        primary = opened[0][1]
+        version = manifest["version"]
+        staged = Path(directory)
+        archive = staged / "sample.tar.gz"
         stream_paths = {k: staged / (k + ".jsonl") for k in STREAMS}
         with ExitStack() as streams:
             files = {k.encode("ascii"): streams.enter_context(p.open("wb")) for k, p in stream_paths.items()}
             for ident in chosen:
-                path = spool / ident
-                rows = read_spooled(path)
-                _, receipt = episode(ident, rows, assets, None)
-                if receipt["errors"]:
-                    raise ValueError(f"{ident}: " + "; ".join(receipt["errors"]))
-                for ref in references(rows):
-                    # Check every occurrence, including repeated PNG dimensions, before deduplicating.
-                    assets.get(ref)
-                    refs.setdefault(ref["file"], ref)
-                with path.open("rb") as f:
+                with (spool / ident).open("rb") as f:
                     for line in f:
                         stream, payload = line.split(b"\t", 1)
                         files[stream].write(payload)
@@ -95,10 +104,16 @@ def main():
     p.add_argument("archive", type=Path)
     p.add_argument("--base-tar", type=Path, action="append", default=[])
     p.add_argument("--ids", type=Path, required=True)
-    p.add_argument("--output", type=Path, required=True)
+    mode = p.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--output", type=Path)
+    mode.add_argument("--plan", action="store_true", help="Verify selected assets and list their contributing archives")
     args = p.parse_args()
     try:
-        sample = export(args.archive, args.base_tar, dict.fromkeys(args.ids.read_text().split()), args.output)
+        ids = dict.fromkeys(args.ids.read_text().split())
+        if args.plan:
+            print(json.dumps(plan(args.archive, args.base_tar, ids), indent=2))
+            return
+        sample = export(args.archive, args.base_tar, ids, args.output)
     except (ValueError, OSError, KeyError, TypeError, tarfile.TarError) as exc:
         p.exit(1, f"Export failed: {exc}\n")
     print(f"Exported {sample['episodes']} selected episodes and {sample['content_addressed_assets']} assets to {args.output}.")

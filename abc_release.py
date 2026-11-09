@@ -44,6 +44,20 @@ class Archive:
             return source.read()
 
 
+def open_needed_bases(stack, paths, unresolved):
+    opened, seen = [], set()
+    for path in paths:
+        if not unresolved:
+            break
+        path = path.resolve()
+        if path not in seen:
+            seen.add(path)
+            archive = Archive(stack, path)
+            opened.append((path, archive))
+            unresolved.difference_update(archive.members)
+    return opened
+
+
 class Assets:
     def __init__(self, archives, pngs, base_hint):
         self.archives, self.pngs, self.base_hint = archives, pngs, base_hint
@@ -186,6 +200,14 @@ a:focus-visible,summary:focus-visible{outline:3px solid #175f9c;outline-offset:3
             " · Recorded evidence only. Project code is shown as text.</p>" + body + "</main></html>").encode()
 
 
+def project_path(filename):
+    path = PurePosixPath(filename)
+    if (path.is_absolute() or not path.parts or ".." in path.parts
+            or path.as_posix() != filename or any(c in filename for c in "\\:\0")):
+        raise ValueError(f"Unsupported project filename: {filename!r}")
+    return path
+
+
 def diff_text(ref, assets, errors):
     try:
         return assets.get(ref).decode("utf-8")
@@ -202,10 +224,7 @@ def episode(ident, rows, assets, zips):
         try:
             files = {}
             for filename, ref in final[field].items():
-                path = PurePosixPath(filename)
-                if (path.is_absolute() or not path.parts or ".." in path.parts
-                        or path.as_posix() != filename or any(c in filename for c in "\\:\0")):
-                    raise ValueError(f"Unsupported project filename: {filename!r}")
+                project_path(filename)
                 assets.get(ref)
                 files[filename] = assets.member(ref["file"]) if render else None
             if not files:
