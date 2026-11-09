@@ -141,3 +141,13 @@ python3 verify_step_receipt.py step-8.zip step-8.json
 
 This checks the ZIP and its members against the supplied receipt. It does
 not authenticate the original release; use the pinned release check for that.
+
+If you have a trusted list of expected screenshot SHA-256 values, add
+`--expected-pngs screenshots.txt` to the smoke command. It checks the
+exact distinct rendered set as well as each file's bytes; an empty list
+explicitly expects no screenshots.
+
+To also check that a receipt matches the archived workspace at its stated
+step, add `--source-archive RELEASE.tar.gz` and any needed base archives.
+Add `--source-sha256 HASH` to check the archive against a SHA-256 value
+from trusted release checksums.

@@ -10,6 +10,8 @@ import tarfile
 from tempfile import TemporaryDirectory
 from threading import Thread
 import unittest
+import warnings
+from zipfile import ZipFile
 
 from abc_release import PNG
 from audit_abc_releases import audit
@@ -164,6 +166,21 @@ class ReleaseToolsTest(unittest.TestCase):
             self.assertEqual(verify_step(archive, receipt)["files_verified"], 1)
             receipt["files"]["index.html"] = "0" * 64
             with self.assertRaisesRegex(ValueError, "Incorrect file SHA-256"):
+                verify_step(archive, receipt)
+
+    def test_step_receipt_rejects_repeated_member_with_matching_zip_digest(self):
+        with TemporaryDirectory() as tmp:
+            archive = Path(tmp) / "duplicated.zip"
+            content = b"recorded bytes"
+            with ZipFile(archive, "w") as z, warnings.catch_warnings():
+                warnings.filterwarnings("ignore", message=r"Duplicate name:.*", category=UserWarning)
+                z.writestr("index.html", content)
+                z.writestr("index.html", content)
+            receipt = {"release": "v1.9.0", "episode_id": ID, "step": 0,
+                       "zip_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
+                       "files": {name: hashlib.sha256(content).hexdigest()
+                                 for name in ("index.html", "panel.css")}}
+            with self.assertRaisesRegex(ValueError, "ZIP entries differ"):
                 verify_step(archive, receipt)
 
     def test_tally_verifier_does_not_trust_manifest_counts(self):

@@ -27,7 +27,7 @@ def get(port, route):
         return response.read()
 
 
-def smoke(source, bases, ident):
+def smoke(source, bases, ident, expected_pngs=None):
     if not ID.fullmatch(ident):
         raise ValueError("An explicit full lowercase episode ID is required")
     with TemporaryDirectory() as td:
@@ -58,6 +58,12 @@ def smoke(source, bases, ident):
                     raise ValueError("Selected episode missing from the index")
                 body = get(port, route)
                 pngs = dict.fromkeys(re.findall(rb'<img src="(/assets/[0-9a-f]{64}\.png)"', body))
+                if expected_pngs is not None:
+                    rendered = {Path(raw.decode("ascii")).stem for raw in pngs}
+                    missing, unexpected = expected_pngs-rendered, rendered-expected_pngs
+                    if missing or unexpected:
+                        raise ValueError("Rendered PNG set differs: "
+                                         f"missing={sorted(missing)}, unexpected={sorted(unexpected)}")
                 for raw in pngs:
                     image_path = raw.decode("ascii")
                     if hashlib.sha256(get(port, image_path)).hexdigest() != Path(image_path).stem:
@@ -90,9 +96,15 @@ def main():
     p.add_argument("archive", type=Path)
     p.add_argument("--base-tar", type=Path, action="append", default=[])
     p.add_argument("--episode", required=True)
+    p.add_argument("--expected-pngs", type=Path, help="Expected distinct rendered PNG hashes, one SHA-256 per line")
     args = p.parse_args()
     try:
-        report = smoke(args.archive, args.base_tar, args.episode)
+        expected = None
+        if args.expected_pngs is not None:
+            expected = {line.strip() for line in args.expected_pngs.read_text().splitlines() if line.strip()}
+            if any(not re.fullmatch(r"[0-9a-f]{64}", sha) for sha in expected):
+                raise ValueError("Expected PNG list must contain lowercase SHA-256 values")
+        report = smoke(args.archive, args.base_tar, args.episode, expected)
     except (ValueError, OSError, KeyError, IndexError, HTTPException, BadZipFile) as exc:
         p.exit(1, f"Replay smoke failed: {exc}\n")
     print(json.dumps(report, indent=2))
