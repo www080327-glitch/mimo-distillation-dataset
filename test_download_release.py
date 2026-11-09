@@ -29,7 +29,8 @@ class DownloadTest(unittest.TestCase):
                     start = CUT + (mode == "bad")
                     self.send_header("Content-Range", f"bytes {start}-{len(DATA)-1}/{len(DATA)}")
                 self.end_headers()
-                self.wfile.write(DATA[:CUT] if mode == "cut" else DATA[CUT:])
+                if mode != "bad":
+                    self.wfile.write(DATA[:CUT] if mode == "cut" else DATA[CUT:])
 
         with HTTPServer(("127.0.0.1", 0), Handler) as server, TemporaryDirectory() as folder:
             thread = Thread(target=server.serve_forever, daemon=True)

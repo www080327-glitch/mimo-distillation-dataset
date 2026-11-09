@@ -54,7 +54,7 @@ class Assets:
         return archive.tar, archive.members[name]
 
     def get(self, ref):
-        name, digest = ref["file"], ref["sha256"]
+        name, digest = ref["file"], ref.get("sha256")
         match = ASSET.fullmatch(name)
         if not match or match[1] != digest:
             raise ValueError(f"Invalid asset reference: {name}")
@@ -78,12 +78,34 @@ class Assets:
         return data
 
 
-def base_hint(manifest, bases):
-    # Older manifests include predecessor history; only explicit reuse is relevant.
+def reused_bases(manifest):
     dependencies = manifest.get("dependencies", [])
     if "assets_reused_from" in manifest:
         reused = manifest["assets_reused_from"]
-        dependencies = [entry for entry in dependencies if reused.get(entry["version"])]
+        return [entry for entry in dependencies if reused.get(entry["version"])]
+    return dependencies
+
+
+def undeclared_reuse(manifest):
+    declared = {entry["version"] for entry in manifest.get("dependencies", [])}
+    return sorted(version for version, count in manifest.get("assets_reused_from", {}).items()
+                  if count and version not in declared)
+
+
+def base_filename(entry):
+    version = entry["version"]
+    if entry.get("asset"):
+        return entry["asset"]
+    if version == "v1.2.0":
+        return "mimo-nextgen-abc-v1.tar.gz"
+    if version in ("v1.3.0", "v1.4.0"):
+        return f"mimo-nextgen-abc-{version}.tar.gz"
+    return None
+
+
+def base_hint(manifest, bases):
+    # Older manifests may include predecessor history alongside actual reuse.
+    dependencies = reused_bases(manifest)
     supplied = set()
     for archive in bases:
         if "MANIFEST.json" in archive.members:
@@ -96,11 +118,7 @@ def base_hint(manifest, bases):
     labels = []
     for entry in dependencies:
         version = entry["version"]
-        asset = entry.get("asset")
-        if asset is None and version == "v1.2.0":
-            asset = "mimo-nextgen-abc-v1.tar.gz"
-        if asset is None and version in ("v1.3.0", "v1.4.0"):
-            asset = f"mimo-nextgen-abc-{version}.tar.gz"
+        asset = base_filename(entry)
         title = f"{version} ({asset})" if asset else version
         detail = "supplied, but missing this asset" if version in supplied else "supply with --base-tar"
         labels.append(f"{title}: {detail}")
@@ -129,7 +147,8 @@ def json_text(value):
 
 def references(value):
     if isinstance(value, dict):
-        if "sha256" in value and isinstance(value.get("file"), str) and value["file"].startswith("assets/"):
+        name = value.get("file")
+        if isinstance(name, str) and name.startswith("assets/") and ("sha256" in value or ASSET.fullmatch(name)):
             yield value
         for part in value.values():
             yield from references(part)
@@ -283,14 +302,19 @@ def read_spooled(path):
     return rows
 
 
+def release_version(manifest):
+    version = manifest["version"]
+    if not re.fullmatch(r"v1\.(?:[2-9]|[1-9][0-9]+)\.\d+", version) or manifest.get("schema_version", 1) != 1:
+        raise ValueError(f"Unsupported A/B/C release format: {version}")
+    return version
+
+
 def run(args, serve):
     with ExitStack() as stack:
         primary = Archive(stack, args.manifest)
         raw = primary.read("MANIFEST.json")
         manifest = json.loads(raw)
-        version = manifest["version"]
-        if not re.fullmatch(r"v1\.(?:[2-9]|[1-9][0-9]+)\.\d+", version) or manifest.get("schema_version", 1) != 1:
-            raise ValueError(f"Unsupported A/B/C release format: {version}")
+        version = release_version(manifest)
         render = args.port is not None
         spool = Path(stack.enter_context(TemporaryDirectory()))
         requested = dict.fromkeys(args.ids.read_text().split()) if args.ids else None

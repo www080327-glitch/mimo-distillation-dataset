@@ -55,3 +55,32 @@ the final filename appears only after SHA-256 verification.
 ```sh
 python3 download_release.py v1.3.0 mimo-nextgen-abc-v1.3.0.tar.gz SHA256SUMS downloads
 ```
+
+### Check bases and share a smaller replay
+
+Save the release's standalone `MANIFEST.json` next to your local files. The
+first command checks local hashes without making network requests. Add
+`--fetch` only when you want to download the missing declared bases.
+Transient gateway errors are retried once; interrupted downloads keep their
+partial files.
+
+```sh
+python3 download_abc_bases.py MANIFEST.json releases
+```
+
+Put one episode ID per line in `ids.txt`. Pass the release tar and any needed
+bases to the exporter. It checks the selected evidence and copies only those
+episodes and their verified assets. The output is a sample, not a release
+increment. It can be reopened without any bases.
+
+```sh
+python3 export_replay.py RELEASE.tar.gz --ids ids.txt --base-tar BASE.tar.gz --output portable.tar.gz
+python3 replay_episode.py portable.tar.gz --abc-tar --strict --receipt portable.json
+```
+
+For offline release counts, pass one manifest per version. Include the
+original v1.2.0 archive to verify its ten IDs; its manifest does not list them.
+
+```sh
+python3 audit_abc_releases.py manifests/*.json --legacy-archive mimo-nextgen-abc-v1.tar.gz
+```
