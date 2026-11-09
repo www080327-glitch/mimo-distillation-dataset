@@ -13,7 +13,7 @@ import re
 import struct
 import tarfile
 from urllib.parse import quote
-from zipfile import ZIP_DEFLATED, ZipFile
+from zipfile import ZIP_DEFLATED, ZipFile, ZipInfo
 
 from reassemble_media import name, verify
 
@@ -241,7 +241,7 @@ code{overflow-wrap:anywhere} figure{margin:.8rem 0} img{max-width:100%;height:au
             + body + "</main></html>").encode()
 
 
-def zipped(files):
+def zipped(files, *, reproducible=False):
     buffer = BytesIO()
     with ZipFile(buffer, "w", ZIP_DEFLATED) as archive:
         for filename, text in files.items():
@@ -253,7 +253,12 @@ def zipped(files):
                 source_archive, member = text
                 with source_archive.extractfile(member) as source:
                     text = source.read()
-            archive.writestr(path.as_posix(), text)
+            if reproducible:
+                info = ZipInfo(path.as_posix())
+                info.compress_type = ZIP_DEFLATED
+                archive.writestr(info, text)
+            else:
+                archive.writestr(path.as_posix(), text)
     return buffer.getvalue()
 
 

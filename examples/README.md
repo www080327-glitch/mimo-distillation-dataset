@@ -122,3 +122,13 @@ python3 check_abc_release.py RELEASE.tar.gz MANIFEST.json SHA256SUMS
 
 This verifies both pinned files and checks that the archive contains the
 same manifest. It does not download or run the archived projects.
+
+For a release-wide version-chain check, run `audit_replay_history.py`
+on the local archive. This compares recorded references to the retained
+workspace hashes, and does not imply that file bytes were read. Add
+`--verify-files` and any required `--base-tar` arguments to verify
+workspace file bytes as well. Missing historical versions are reported as
+gaps rather than reconstructed by guesswork.
+
+`restore_replay_step.py --receipt step.json` writes the episode ID, step,
+verified file hashes and deterministic ZIP hash in a separate JSON file.

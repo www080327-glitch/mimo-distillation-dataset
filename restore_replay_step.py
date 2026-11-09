@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Recover recorded project files at a public replay step without executing anything."""
 import argparse
+from contextlib import ExitStack
+import hashlib
+import json
 import os
 from pathlib import Path
 import tarfile
@@ -41,16 +44,26 @@ def workspace_at(rows, step):
     return state
 
 
-def restore(source, bases, ident, step, output):
-    if output.exists():
-        raise ValueError("Output already exists")
-    with verified_selection(source, bases, {ident: None}) as (_, spool, _, _, assets, _):
+def restore(source, bases, ident, step, output, receipt=None):
+    if output.exists() or output.is_symlink() or (receipt and (receipt.exists() or receipt.is_symlink())):
+        raise ValueError("Output or receipt already exists")
+    if receipt and output.resolve() == receipt.resolve():
+        raise ValueError("ZIP and receipt paths must differ")
+    with verified_selection(source, bases, {ident: None}) as (manifest, spool, _, _, assets, _):
         refs = workspace_at(read_spooled(spool / ident), step)
-        content = zipped({name: assets.get(ref) for name, ref in refs.items()})
-    with TemporaryDirectory(dir=output.parent) as tmp:
-        archive = Path(tmp) / "recorded.zip"
+        content = zipped({name: assets.get(ref) for name, ref in refs.items()}, reproducible=True)
+    with ExitStack() as stack:
+        archive = Path(stack.enter_context(TemporaryDirectory(dir=output.parent))) / "recorded.zip"
         archive.write_bytes(content)
+        if receipt:
+            metadata = Path(stack.enter_context(TemporaryDirectory(dir=receipt.parent))) / "receipt.json"
+            metadata.write_text(json.dumps({"release": manifest["version"], "episode_id": ident, "step": step,
+                "files": {name: ref["sha256"] for name, ref in refs.items()},
+                "zip_sha256": hashlib.sha256(content).hexdigest(),
+                "scope": "Recorded files only; project code was not executed."}, indent=2) + "\n")
         os.link(archive, output)
+        if receipt:
+            os.link(metadata, receipt)
     return len(refs)
 
 
@@ -61,9 +74,10 @@ def main():
     p.add_argument("--episode", required=True)
     p.add_argument("--step", type=int, required=True, help="After this recorded step, inclusive; 0 is initial")
     p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--receipt", type=Path, help="Also write verified file and ZIP hashes to a new JSON file")
     args = p.parse_args()
     try:
-        n = restore(args.archive, args.base_tar, args.episode, args.step, args.output)
+        n = restore(args.archive, args.base_tar, args.episode, args.step, args.output, args.receipt)
     except (OSError, ValueError, KeyError, TypeError, tarfile.TarError) as exc:
         p.exit(1, f"Recovery failed: {exc}\n")
     print(f"Recovered {n} recorded files at step {args.step}; project code was not executed.")
