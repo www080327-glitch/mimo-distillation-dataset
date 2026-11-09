@@ -45,8 +45,8 @@ class Archive:
 
 
 class Assets:
-    def __init__(self, archives, pngs):
-        self.archives, self.pngs = archives, pngs
+    def __init__(self, archives, pngs, base_hint):
+        self.archives, self.pngs, self.base_hint = archives, pngs, base_hint
         self.checked = {}
 
     def member(self, name):
@@ -61,7 +61,7 @@ class Assets:
         if name not in self.checked:
             archive = next((a for a in self.archives if name in a.members), None)
             if archive is None:
-                raise ValueError(f"Missing asset: {name}. Supply its release with --base-tar.")
+                raise ValueError(f"Missing asset: {name}. {self.base_hint}")
             data = archive.read(name)
             if sha(data) != digest:
                 raise ValueError(f"Asset SHA-256 mismatch: {name}")
@@ -76,6 +76,51 @@ class Assets:
             if self.pngs is not None:
                 self.pngs["/" + name] = archive.tar, archive.members[name]
         return data
+
+
+def base_hint(manifest, bases):
+    # Older manifests include predecessor history; only explicit reuse is relevant.
+    dependencies = manifest.get("dependencies", [])
+    if "assets_reused_from" in manifest:
+        reused = manifest["assets_reused_from"]
+        dependencies = [entry for entry in dependencies if reused.get(entry["version"])]
+    supplied = set()
+    for archive in bases:
+        if "MANIFEST.json" in archive.members:
+            try:
+                version = json.loads(archive.read("MANIFEST.json")).get("version")
+            except (ValueError, AttributeError):
+                continue
+            if isinstance(version, str):
+                supplied.add(version)
+    labels = []
+    for entry in dependencies:
+        version = entry["version"]
+        asset = entry.get("asset")
+        if asset is None and version == "v1.2.0":
+            asset = "mimo-nextgen-abc-v1.tar.gz"
+        if asset is None and version in ("v1.3.0", "v1.4.0"):
+            asset = f"mimo-nextgen-abc-{version}.tar.gz"
+        title = f"{version} ({asset})" if asset else version
+        detail = "supplied, but missing this asset" if version in supplied else "supply with --base-tar"
+        labels.append(f"{title}: {detail}")
+    hint = "Declared base candidates: " + "; ".join(labels) + "." if labels else "No candidate base is declared."
+    if supplied:
+        hint += " Supplied base versions: " + ", ".join(sorted(supplied)) + "."
+    return hint
+
+
+def index_counts(manifest, selected):
+    parts = [f"Selected: {selected:,}"]
+    if "sample_of" in manifest:
+        parts.append(f"Sample from {manifest['sample_of']}; no new episodes")
+    elif manifest.get("incremental") is True:
+        parts.append(f"Release increment: {manifest['episodes']:,}")
+        if "cumulative_unique_abc_episodes" in manifest:
+            parts.append(f"Cumulative unique: {manifest['cumulative_unique_abc_episodes']:,}")
+    else:
+        parts.append(f"Release episodes: {manifest['episodes']:,}")
+    return "<p>" + escape(" · ".join(parts)) + "</p>"
 
 
 def json_text(value):
@@ -243,7 +288,8 @@ def run(args, serve):
         pages, receipts, links = {}, [], []
         pngs = {} if render else None
         zips = {} if render else None
-        assets = Assets([primary, *(Archive(stack, path) for path in args.base_tar)], pngs)
+        bases = [Archive(stack, path) for path in dict.fromkeys(p.resolve() for p in args.base_tar)]
+        assets = Assets([primary, *bases], pngs, base_hint(manifest, bases))
         for ident in selected:
             row_path = spool / ident
             rows = read_spooled(row_path)
@@ -259,7 +305,8 @@ def run(args, serve):
             receipts.append(receipt)
         if render:
             index = spool / "index.html"
-            index.write_bytes(page(version, "<h1>MiMo A/B/C episodes</h1><ol>" + "".join(links) + "</ol>"))
+            index.write_bytes(page(version, "<h1>MiMo A/B/C episodes</h1>" +
+                index_counts(manifest, len(selected)) + "<ol>" + "".join(links) + "</ol>"))
             pages["/"] = index
         if args.receipt:
             args.receipt.write_text(json.dumps({"release": version, "manifest_sha256": sha(raw),
