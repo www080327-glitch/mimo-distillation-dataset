@@ -50,7 +50,7 @@ def fetch_base(url, checksum, target):
 def check(entry, directory, fetch):
     version, asset, checksum = entry
     target = directory / asset
-    row = {"version": version, "asset": asset}
+    row = {"version": version, "asset": asset, "sha256": checksum}
     try:
         if target.exists():
             if digest(target) != checksum:
@@ -86,8 +86,10 @@ def main():
             rows = list(pool.map(lambda entry: check(entry, args.directory, True), plan))
     else:
         rows = [check(entry, args.directory, False) for entry in plan]
-    print(json.dumps({"release": version, "bases": rows}, indent=2))
-    return int(any(row["status"] != "ready" for row in rows))
+    ready = all(row["status"] == "ready" for row in rows)
+    replay_args = [arg for row in rows for arg in ("--base-tar", str((args.directory / row["asset"]).absolute()))] if ready else None
+    print(json.dumps({"release": version, "bases": rows, "replay_args": replay_args}, indent=2))
+    return int(not ready)
 
 
 if __name__ == "__main__":

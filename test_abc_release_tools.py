@@ -100,6 +100,27 @@ class ReleaseToolsTest(unittest.TestCase):
             self.assertNotIn("Traceback", p.stderr)
             self.assertFalse(out.exists())
 
+    def test_base_plan_emits_replay_args_only_for_verified_bases(self):
+        with TemporaryDirectory(prefix="bases with spaces ") as tmp:
+            t = Path(tmp)
+            manifest = t / "MANIFEST.json"
+            base = t / "mimo-nextgen-abc-v1.tar.gz"
+            content = b"example verified base bytes"
+            sha = hashlib.sha256(content).hexdigest()
+            manifest.write_text(json.dumps({"version": "v1.3.0", "dependencies": [
+                {"version": "v1.2.0", "sha256": sha},
+            ]}))
+            cmd = [sys.executable, str(TOOLS / "download_abc_bases.py"), str(manifest), str(t)]
+            missing = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            self.assertEqual(missing.returncode, 1)
+            self.assertIsNone(json.loads(missing.stdout)["replay_args"])
+            base.write_bytes(content)
+            ready = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+            self.assertEqual(ready.returncode, 0, ready.stderr)
+            output = json.loads(ready.stdout)
+            self.assertEqual(output["bases"][0]["sha256"], sha)
+            self.assertEqual(output["replay_args"], ["--base-tar", str(base)])
+
     def test_transient_gateway_failure_retries_one_resumed_range(self):
         content = b"verified range data" * 1500
         prefix = 11111

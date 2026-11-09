@@ -62,7 +62,9 @@ Save the release's standalone `MANIFEST.json` next to your local files. The
 first command checks local hashes without making network requests. Add
 `--fetch` only when you want to download the missing declared bases.
 Transient gateway errors are retried once; interrupted downloads keep their
-partial files.
+partial files. The JSON report lists each pinned SHA-256 and includes
+`replay_args` only when every base verifies. Pass that array as individual
+arguments to the replay command (paths with spaces remain single arguments).
 
 ```sh
 python3 download_abc_bases.py MANIFEST.json releases
