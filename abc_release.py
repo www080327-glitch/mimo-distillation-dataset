@@ -5,12 +5,12 @@ from html import escape
 import gzip
 import hashlib
 import json
-from pathlib import PurePosixPath
+from pathlib import Path, PurePosixPath
 import re
 import shutil
 import struct
 import tarfile
-from tempfile import TemporaryFile
+from tempfile import TemporaryDirectory, TemporaryFile
 
 STREAMS = ("full_trajectory", "final_task_to_html", "observations", "single_edit")
 ID = re.compile(r"[0-9a-f]{20}")
@@ -36,8 +36,11 @@ class Archive:
                 raise ValueError(f"{path.name}: invalid or duplicate archive member {member.name!r}")
             self.members[member.name] = member
 
+    def open(self, name):
+        return self.tar.extractfile(self.members[name])
+
     def read(self, name):
-        with self.tar.extractfile(self.members[name]) as source:
+        with self.open(name) as source:
             return source.read()
 
 
@@ -58,13 +61,16 @@ class Assets:
             data = archive.read(name)
             if sha(data) != digest:
                 raise ValueError(f"Asset SHA-256 mismatch: {name}")
-            self.checked[name] = archive, data
-        archive, data = self.checked[name]
+            if self.pngs is not None:
+                self.checked[name] = archive, data
+        else:
+            archive, data = self.checked[name]
         if name.endswith(".png"):
             if (len(data) < 24 or not data.startswith(PNG)
                     or list(struct.unpack(">II", data[16:24])) != ref.get("size")):
                 raise ValueError(f"PNG header or dimensions differ: {name}")
-            self.pngs["/" + name] = archive.tar, archive.members[name]
+            if self.pngs is not None:
+                self.pngs["/" + name] = archive.tar, archive.members[name]
         return data
 
 
@@ -92,7 +98,7 @@ def figures(value, assets, label, errors):
         except ValueError as exc:
             errors.add(str(exc))
             continue
-        if not ref["file"].endswith(".png") or ref["file"] in seen:
+        if not label or not ref["file"].endswith(".png") or ref["file"] in seen:
             continue
         seen.add(ref["file"])
         html.append(f'<figure><figcaption>{label}</figcaption>'
@@ -115,6 +121,7 @@ a:focus-visible,summary:focus-visible{outline:3px solid #175f9c;outline-offset:3
 def episode(ident, rows, assets, zips):
     final = rows["final_task_to_html"][0]
     errors, downloads, projects = set(), [], {}
+    render = zips is not None
     for label, field in (("initial", "starting_files"), ("retained", "final_files")):
         try:
             files = {}
@@ -123,7 +130,8 @@ def episode(ident, rows, assets, zips):
                 if (path.is_absolute() or not path.parts or ".." in path.parts
                         or path.as_posix() != filename or any(c in filename for c in "\\:\0")):
                     raise ValueError(f"Unsupported project filename: {filename!r}")
-                files[filename] = assets.get(ref)
+                data = assets.get(ref)
+                files[filename] = data if render else None
             if not files:
                 raise ValueError("No project files recorded")
         except ValueError as exc:
@@ -131,29 +139,33 @@ def episode(ident, rows, assets, zips):
             projects[label] = None
         else:
             route = f"/project/{ident}/{label}.zip"
-            zips[route] = files
             projects[label] = list(files)
-            downloads.append(f'<li><a href="{route}">Download {label} project ZIP</a> ({len(files)} files)</li>')
+            if render:
+                zips[route] = files
+                downloads.append(f'<li><a href="{route}">Download {label} project ZIP</a> ({len(files)} files)</li>')
 
-    body = [f"<h1>Episode {ident}</h1><p>Status: {escape(final['status'])} · {escape(final['termination'])}</p>",
-            "<ul>" + "".join(downloads) + "</ul>"]
-    sections = []
+    body = []
+    if render:
+        body = [f"<h1>Episode {ident}</h1><p>Status: {escape(final['status'])} · {escape(final['termination'])}</p>",
+                "<ul>" + "".join(downloads) + "</ul>", "<h2>Teacher requests and visible responses</h2>"]
     for turn in rows["full_trajectory"][0]["turns"]:
-        images = figures(turn["messages"], assets, "Teacher input screenshot", errors)
-        sections.append(f"<details><summary>Teacher step {turn['step']}</summary>" + images + json_text(turn) + "</details>")
-    body.append("<h2>Teacher requests and visible responses</h2>" + "".join(sections))
-    sections = []
+        images = figures(turn["messages"], assets, "Teacher input screenshot" if render else "", errors)
+        if render:
+            body.append(f"<details><summary>Teacher step {turn['step']}</summary>" + images + json_text(turn) + "</details>")
+    if render:
+        body.append("<h2>Tool results and preview screenshots</h2>")
     for obs in rows["observations"]:
         detail = obs["observation"]
-        images = figures(detail.get("before_views", []), assets, "Tool preview before source change", errors)
-        images += figures(detail.get("views", []), assets, "Tool preview screenshot", errors)
+        images = figures(detail.get("before_views", []), assets, "Tool preview before source change" if render else "", errors)
+        images += figures(detail.get("views", []), assets, "Tool preview screenshot" if render else "", errors)
         for change in obs["environment_changes"]:
             figures(change, assets, "", errors)
-        sections.append(f"<details><summary>Tool step {obs['step']}: {escape(obs['event'])}</summary>" +
+        if render:
+            body.append(f"<details><summary>Tool step {obs['step']}: {escape(obs['event'])}</summary>" +
                         images + json_text(obs) + "</details>")
-    body.append("<h2>Tool results and preview screenshots</h2>" + "".join(sections))
     figures(final, assets, "", errors)
-    body.append("<details><summary>Recorded requirements and files</summary>" + json_text(final) + "</details>")
+    if render:
+        body.append("<details><summary>Recorded requirements and files</summary>" + json_text(final) + "</details>")
     for edit in rows["single_edit"]:
         audit = edit["audit_assets"]
         figures(audit, assets, "", errors)
@@ -162,13 +174,58 @@ def episode(ident, rows, assets, zips):
         except (ValueError, UnicodeError) as exc:
             errors.add(str(exc))
             diff = ""
-        body.append(f"<details><summary>Edit at step {edit['step']}: {escape(edit['file'])}</summary>"
-                    f"<pre>{escape(diff)}</pre></details>")
-    if errors:
+        if render:
+            body.append(f"<details><summary>Edit at step {edit['step']}: {escape(edit['file'])}</summary>"
+                        f"<pre>{escape(diff)}</pre></details>")
+    if render and errors:
         body.insert(1, "<h2>Missing or invalid content</h2><ul>" +
                     "".join(f"<li>{escape(e)}</li>" for e in sorted(errors)) + "</ul>")
     return "".join(body), {"id": ident, "focus": final["focus"], "status": final["status"],
                            "projects": projects, "errors": sorted(errors)}
+
+
+def load_groups(primary, manifest, requested, spool):
+    counts = defaultdict(lambda: dict.fromkeys(STREAMS, 0))
+    groups = defaultdict(lambda: {name: [] for name in STREAMS})
+    for stream in STREAMS:
+        name = stream + ".jsonl"
+        expected = manifest["files"][name]
+        checksum = hashlib.sha256()
+        with primary.open(name) as source:
+            for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                checksum.update(chunk)
+        if primary.members[name].size != expected["bytes"] or checksum.hexdigest() != expected["sha256"]:
+            raise ValueError(f"{name}: size or SHA-256 differs from MANIFEST.json")
+        with primary.open(name) as source:
+            for line in source:
+                row = json.loads(line)
+                ident = row["episode_id"]
+                if not ID.fullmatch(ident):
+                    raise ValueError(f"{name}: invalid episode ID")
+                counts[ident][stream] += 1
+                if requested is None or ident in requested:
+                    if spool is None:
+                        groups[ident][stream].append(row)
+                    else:
+                        with (spool / ident).open("ab") as output:
+                            output.write(stream.encode("ascii") + b"\t" + line.rstrip(b"\r\n") + b"\n")
+    if (not counts or len(counts) != manifest["episodes"] or
+            any(row["full_trajectory"] != 1 or row["final_task_to_html"] != 1 for row in counts.values()) or
+            ("episode_ids" in manifest and set(manifest["episode_ids"]) != counts.keys())):
+        raise ValueError("Episode index differs from the recorded streams")
+    selected = counts if requested is None else requested
+    if not selected or selected.keys() - counts.keys():
+        raise ValueError("--ids must select episode IDs in this A/B/C archive")
+    return selected, groups
+
+
+def read_spooled(path):
+    rows = {stream: [] for stream in STREAMS}
+    with path.open("rb") as source:
+        for line in source:
+            stream, payload = line.split(b"\t", 1)
+            rows[stream.decode("ascii")].append(json.loads(payload))
+    return rows
 
 
 def run(args, serve):
@@ -179,35 +236,24 @@ def run(args, serve):
         version = manifest["version"]
         if not re.fullmatch(r"v1\.(?:[2-9]|[1-9][0-9]+)\.\d+", version) or manifest.get("schema_version", 1) != 1:
             raise ValueError(f"Unsupported A/B/C release format: {version}")
-        groups = defaultdict(lambda: {name: [] for name in STREAMS})
-        for stream in STREAMS:
-            name = stream + ".jsonl"
-            data = primary.read(name)
-            expected = manifest["files"][name]
-            if len(data) != expected["bytes"] or sha(data) != expected["sha256"]:
-                raise ValueError(f"{name}: size or SHA-256 differs from MANIFEST.json")
-            for line in data.splitlines():
-                row = json.loads(line)
-                ident = row["episode_id"]
-                if not ID.fullmatch(ident):
-                    raise ValueError(f"{name}: invalid episode ID")
-                groups[ident][stream].append(row)
-        if (not groups or len(groups) != manifest["episodes"] or
-                any(len(row["full_trajectory"]) != 1 or len(row["final_task_to_html"]) != 1 for row in groups.values()) or
-                ("episode_ids" in manifest and set(manifest["episode_ids"]) != groups.keys())):
-            raise ValueError("Episode index differs from the recorded streams")
-        selected = dict.fromkeys(args.ids.read_text().split()) if args.ids else groups
-        if not selected or selected.keys() - groups.keys():
-            raise ValueError("--ids must select episode IDs in this A/B/C archive")
-        pages, pngs, zips, receipts, links = {}, {}, {}, [], []
+        render = args.port is not None
+        spool = None if render else Path(stack.enter_context(TemporaryDirectory()))
+        requested = dict.fromkeys(args.ids.read_text().split()) if args.ids else None
+        selected, groups = load_groups(primary, manifest, requested, spool)
+        pages, receipts, links = {}, [], []
+        pngs = {} if render else None
+        zips = {} if render else None
         assets = Assets([primary, *(Archive(stack, path) for path in args.base_tar)], pngs)
         for ident in selected:
-            body, receipt = episode(ident, groups[ident], assets, zips)
-            route = "/episode/" + ident
-            pages[route] = page(version, body)
-            links.append(f'<li><a href="{route}">{ident}</a> · {escape(receipt["focus"])} · {escape(receipt["status"])}</li>')
+            rows = groups.pop(ident) if render else read_spooled(spool / ident)
+            body, receipt = episode(ident, rows, assets, zips)
+            if render:
+                route = "/episode/" + ident
+                pages[route] = page(version, body)
+                links.append(f'<li><a href="{route}">{ident}</a> · {escape(receipt["focus"])} · {escape(receipt["status"])}</li>')
             receipts.append(receipt)
-        pages["/"] = page(version, "<h1>MiMo A/B/C episodes</h1><ol>" + "".join(links) + "</ol>")
+        if render:
+            pages["/"] = page(version, "<h1>MiMo A/B/C episodes</h1><ol>" + "".join(links) + "</ol>")
         if args.receipt:
             args.receipt.write_text(json.dumps({"release": version, "manifest_sha256": sha(raw),
                 "dependencies": manifest.get("dependencies", []), "episodes": receipts}, ensure_ascii=False, indent=2) + "\n")
