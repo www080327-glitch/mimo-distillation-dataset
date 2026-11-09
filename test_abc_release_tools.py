@@ -245,7 +245,9 @@ class ReleaseToolsTest(unittest.TestCase):
             renamed.write_bytes(source.read_bytes())
             with self.assertRaisesRegex(ValueError, "named asset"):
                 check_release(renamed, manifest, sums)
-            self.assertTrue(check_release(renamed, manifest, sums, source.name)["verified"])
+            renamed_report = check_release(renamed, manifest, sums, source.name)
+            self.assertTrue(renamed_report["verified"])
+            self.assertEqual(renamed_report["archive_asset"], source.name)
             manifest.write_bytes(manifest.read_bytes() + b"\n")
             with self.assertRaisesRegex(ValueError, "Standalone MANIFEST.json SHA-256"):
                 check_release(source, manifest, sums)

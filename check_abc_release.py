@@ -28,7 +28,8 @@ def check(archive, manifest, sums, asset_name=None):
     version = release_version(document)
     if "sample_of" in document:
         raise ValueError("A sample is not a production release")
-    return {"version": version, "declared_episodes": document["episodes"], "archive_sha256": archive_pin,
+    return {"version": version, "declared_episodes": document["episodes"], "archive_asset": official_name,
+            "archive_sha256": archive_pin,
             "manifest_sha256": manifest_pin, "verified": True}
 
 
