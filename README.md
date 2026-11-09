@@ -2,15 +2,24 @@
 
 这是独立整理的教师模仿候选数据。文本、示例代码和部分页面为 **AI 生成**，可能有错误或未完成，不能视作真值、人工审核结论或模型能力证明。没有包含模型权重。
 
-从 [GitHub Releases](../../releases) 下载分片。每个版本说明列出实际包含的文件与条数。文件校验：
+先试 [10 条真实轨迹的本地回放](examples/README.md)：只需三个公开文件，能查看历史图片、工具结果、各版项目文件和缺件提示。另见 [上游数据复用矩阵](UPSTREAM_REUSE.md)。
+
+从 [GitHub Releases](../../releases) 下载分片。每个版本说明列出实际包含的文件与条数。下载了完整版本时可统一校验：
 
 ```sh
 shasum -a 256 -c SHA256SUMS
 ```
 
-对于名称末尾带 `.part-001`、`.part-002` 的文件，下载对应的所有部分和
-`MANIFEST.json`，再用 `python3 reassemble_media.py MANIFEST.json --out restored`
-按清单拼回逻辑文件。省略 `--out` 只做校验；该脚本不解包、不执行任何数据。
+只下载所需分片时，用 `--asset` 逐个指定逻辑文件名，可重复传入。对于拆分文件，
+用 `--list-parts` 列出准确的下载名，再用 `--out` 拼回逻辑文件：
+
+```sh
+python3 reassemble_media.py MANIFEST.json --asset mimo-episode-media-v1-001.tar --list-parts
+python3 reassemble_media.py MANIFEST.json --asset mimo-episode-media-v1-001.tar --out restored
+```
+
+省略 `--out` 只校验。重试时会校验并复用已恢复的文件，校验失败的旧文件会保留供检查。
+脚本不解包、不执行数据。
 
 | 分片 | 内容 |
 | --- | --- |
@@ -26,6 +35,7 @@ shasum -a 256 -c SHA256SUMS
 ## English
 
 An independent dataset of candidate teacher imitation examples.
+Start with the [10-episode local replay](examples/README.md), or see the [upstream reuse matrix](UPSTREAM_REUSE.md).
 Download versioned shards and checksums from [Releases](../../releases). Outputs are
 AI-generated and may be incorrect or incomplete. Third-party media retain their
 original rights and credits. See [NOTICE](NOTICE). No model weights are included.

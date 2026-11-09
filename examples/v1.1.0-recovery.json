@@ -1,0 +1,1304 @@
+{
+  "release": "v1.1.0",
+  "manifest_sha256": "80e626910c59c58729981fe0e9480b7609b540d1acdba3406541a9cf0642c75f",
+  "episodes": [
+    {
+      "id": "52ca14f9caf49598b9b818f7a65b210d471975ed3800e974cc307dcb5131d16a",
+      "task": "agent",
+      "split": "train",
+      "result": {
+        "state": "completed",
+        "reason": "verified_environment_result",
+        "executed_steps": 12
+      },
+      "teachers": [
+        "mimo-v2.6-pro"
+      ],
+      "requests": 14,
+      "events": 13,
+      "tool_returns": 13,
+      "edits": [
+        {
+          "step": 6,
+          "before": "starting-index.html",
+          "after": "version-06.html"
+        },
+        {
+          "step": 7,
+          "before": "version-06.html",
+          "after": "version-07.html"
+        },
+        {
+          "step": 10,
+          "before": "version-07.html",
+          "after": "version-10.html"
+        },
+        {
+          "step": 11,
+          "before": "version-10.html",
+          "after": "version-11.html"
+        },
+        {
+          "step": 12,
+          "before": "version-11.html",
+          "after": "version-12.html"
+        }
+      ],
+      "media": [
+        {
+          "step": 3,
+          "event": 3,
+          "path": "images/e535d09a762e0273d7ebc7772e05a4c9f8464be6a47381bf25deafe6a4368adb.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "e535d09a762e0273d7ebc7772e05a4c9f8464be6a47381bf25deafe6a4368adb",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 3,
+          "event": 3,
+          "path": "images/2efe03f0e802bf1402301e411badac5089bcdd7b77b89b285c2369f0b5bb8128.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "2efe03f0e802bf1402301e411badac5089bcdd7b77b89b285c2369f0b5bb8128",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 4,
+          "path": "images/e535d09a762e0273d7ebc7772e05a4c9f8464be6a47381bf25deafe6a4368adb.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "e535d09a762e0273d7ebc7772e05a4c9f8464be6a47381bf25deafe6a4368adb",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 4,
+          "path": "images/2efe03f0e802bf1402301e411badac5089bcdd7b77b89b285c2369f0b5bb8128.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "2efe03f0e802bf1402301e411badac5089bcdd7b77b89b285c2369f0b5bb8128",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 5,
+          "path": "images/e535d09a762e0273d7ebc7772e05a4c9f8464be6a47381bf25deafe6a4368adb.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "e535d09a762e0273d7ebc7772e05a4c9f8464be6a47381bf25deafe6a4368adb",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 5,
+          "path": "images/2efe03f0e802bf1402301e411badac5089bcdd7b77b89b285c2369f0b5bb8128.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "2efe03f0e802bf1402301e411badac5089bcdd7b77b89b285c2369f0b5bb8128",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 13,
+          "event": 13,
+          "path": "images/3bc03631ba484747404a3df3431a013c46d187314fdc5fc26e62577c41301522.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "3bc03631ba484747404a3df3431a013c46d187314fdc5fc26e62577c41301522",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 13,
+          "event": 13,
+          "path": "images/8b5bbf74aa7f8cf50367856d9ae9263006454d23e5fda95a07f4026af8a4e4e0.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "8b5bbf74aa7f8cf50367856d9ae9263006454d23e5fda95a07f4026af8a4e4e0",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 14,
+          "path": "images/3bc03631ba484747404a3df3431a013c46d187314fdc5fc26e62577c41301522.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "3bc03631ba484747404a3df3431a013c46d187314fdc5fc26e62577c41301522",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 14,
+          "path": "images/8b5bbf74aa7f8cf50367856d9ae9263006454d23e5fda95a07f4026af8a4e4e0.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "8b5bbf74aa7f8cf50367856d9ae9263006454d23e5fda95a07f4026af8a4e4e0",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        }
+      ],
+      "versions": {
+        "initial": {
+          "index.html": "d2d208d6bfc01d68d0c872672cb226bc929bedbf7b8d1e884aeb1531ca2c7790",
+          "requirements.md": "e16827fddd5192e71cb34d1c5ed56f1b07546130e618cb2712bd192be4eceadc"
+        },
+        "version-06.html": {
+          "index.html": "10bc3b5d6c7743c53257aec936fd80ecf65672af753f7c025ea986643ea48aa1",
+          "requirements.md": "e16827fddd5192e71cb34d1c5ed56f1b07546130e618cb2712bd192be4eceadc",
+          "release-note.md": "7f8ea7db4965aeb8515548709f4277c6f583d27c07a1c71554a3cfa92170b6c8"
+        },
+        "version-07.html": {
+          "index.html": "10bc3b5d6c7743c53257aec936fd80ecf65672af753f7c025ea986643ea48aa1",
+          "requirements.md": "e16827fddd5192e71cb34d1c5ed56f1b07546130e618cb2712bd192be4eceadc",
+          "release-note.md": "7f8ea7db4965aeb8515548709f4277c6f583d27c07a1c71554a3cfa92170b6c8"
+        },
+        "version-10.html": {
+          "index.html": "414f60ce873f6159702acefa345267224fed6eb33a9ad2c192a8d97d105d93d8",
+          "requirements.md": "e16827fddd5192e71cb34d1c5ed56f1b07546130e618cb2712bd192be4eceadc",
+          "release-note.md": "7f8ea7db4965aeb8515548709f4277c6f583d27c07a1c71554a3cfa92170b6c8"
+        },
+        "version-11.html": {
+          "index.html": "334036f68c081c31cb85bf4ac3644d7e26e050b45fc8e7195b21ab2cdc3a0f12",
+          "requirements.md": "e16827fddd5192e71cb34d1c5ed56f1b07546130e618cb2712bd192be4eceadc",
+          "release-note.md": "7f8ea7db4965aeb8515548709f4277c6f583d27c07a1c71554a3cfa92170b6c8"
+        },
+        "version-12.html": {
+          "index.html": "a54b8d977696113c516ed60cf6d06f942f860bf255dd51bd2d6b19618e83f088",
+          "requirements.md": "e16827fddd5192e71cb34d1c5ed56f1b07546130e618cb2712bd192be4eceadc",
+          "release-note.md": "7f8ea7db4965aeb8515548709f4277c6f583d27c07a1c71554a3cfa92170b6c8"
+        },
+        "last-retained": {
+          "index.html": "a54b8d977696113c516ed60cf6d06f942f860bf255dd51bd2d6b19618e83f088",
+          "requirements.md": "e16827fddd5192e71cb34d1c5ed56f1b07546130e618cb2712bd192be4eceadc",
+          "release-note.md": "7f8ea7db4965aeb8515548709f4277c6f583d27c07a1c71554a3cfa92170b6c8"
+        }
+      },
+      "project_limits": [],
+      "runtime_files_recovered_at_step": {
+        "release-note.md": 4
+      },
+      "episode_source_license": null,
+      "rerun": "NOT_RUN"
+    },
+    {
+      "id": "cf351e1e717b5a78a5bb18876a75aceb3b55939825d3eb58067926ef32342c92",
+      "task": "agent",
+      "split": "train",
+      "result": {
+        "state": "incomplete",
+        "reason": "invalid_action_schema",
+        "executed_steps": 6
+      },
+      "teachers": [
+        "mimo-v2.6-pro"
+      ],
+      "requests": 7,
+      "events": 6,
+      "tool_returns": 6,
+      "edits": [
+        {
+          "step": 5,
+          "before": "starting-index.html",
+          "after": "version-05.html"
+        }
+      ],
+      "media": [
+        {
+          "step": 6,
+          "event": 6,
+          "path": "images/73124cdb089eddb31b95ee5bc56682ab3c09c152475bdbc37230d6c644291354.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "73124cdb089eddb31b95ee5bc56682ab3c09c152475bdbc37230d6c644291354",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 6,
+          "event": 6,
+          "path": "images/db82ffcc6d96414b82b014992b870b595f368b9c941a1816b161b45561ec86e4.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "db82ffcc6d96414b82b014992b870b595f368b9c941a1816b161b45561ec86e4",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 7,
+          "path": "images/73124cdb089eddb31b95ee5bc56682ab3c09c152475bdbc37230d6c644291354.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "73124cdb089eddb31b95ee5bc56682ab3c09c152475bdbc37230d6c644291354",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 7,
+          "path": "images/db82ffcc6d96414b82b014992b870b595f368b9c941a1816b161b45561ec86e4.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "db82ffcc6d96414b82b014992b870b595f368b9c941a1816b161b45561ec86e4",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        }
+      ],
+      "versions": {
+        "initial": {
+          "data.json": "f90c773f69c3cdb8de80ded350b966064473c4e7fa3fd60986ae24bf4e53f39d",
+          "index.html": "1e6ee54d15c6d89f402c84bb50607e4686442b446e31adb28b16b2899ed23951",
+          "requirements.md": "a47db8c35b1163c45ed4ade63240aed101c8e6f5ea0c72625adedce18c020107"
+        },
+        "version-05.html": {
+          "data.json": "f90c773f69c3cdb8de80ded350b966064473c4e7fa3fd60986ae24bf4e53f39d",
+          "index.html": "8a2955ade362f59551e426d9b1faffb063541f6df889371b7305edbeb727ad13",
+          "requirements.md": "a47db8c35b1163c45ed4ade63240aed101c8e6f5ea0c72625adedce18c020107"
+        },
+        "last-retained": {
+          "data.json": "f90c773f69c3cdb8de80ded350b966064473c4e7fa3fd60986ae24bf4e53f39d",
+          "index.html": "8a2955ade362f59551e426d9b1faffb063541f6df889371b7305edbeb727ad13",
+          "requirements.md": "a47db8c35b1163c45ed4ade63240aed101c8e6f5ea0c72625adedce18c020107"
+        }
+      },
+      "project_limits": [],
+      "runtime_files_recovered_at_step": {},
+      "episode_source_license": null,
+      "rerun": "NOT_RUN"
+    },
+    {
+      "id": "e64c00573475cebc1e24fc905aad99b11642e842c4b86bdf17ed266ae6bf1a8e",
+      "task": "agent",
+      "split": "train",
+      "result": {
+        "state": "failed",
+        "reason": "goal_not_verified",
+        "executed_steps": 2
+      },
+      "teachers": [
+        "mimo-v2.6-pro"
+      ],
+      "requests": 3,
+      "events": 2,
+      "tool_returns": 2,
+      "edits": [],
+      "media": [
+        {
+          "step": 2,
+          "event": 2,
+          "path": "images/0037025190a009263aa3d8d618b44c228f93637f57d1ecaae410032d07edd023.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "0037025190a009263aa3d8d618b44c228f93637f57d1ecaae410032d07edd023",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "event": 2,
+          "path": "images/13b0eac168e358f932770219181828d41ab9f1e69a88c7fa4c65aea5638f4715.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "13b0eac168e358f932770219181828d41ab9f1e69a88c7fa4c65aea5638f4715",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 3,
+          "path": "images/0037025190a009263aa3d8d618b44c228f93637f57d1ecaae410032d07edd023.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "0037025190a009263aa3d8d618b44c228f93637f57d1ecaae410032d07edd023",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 3,
+          "path": "images/13b0eac168e358f932770219181828d41ab9f1e69a88c7fa4c65aea5638f4715.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "13b0eac168e358f932770219181828d41ab9f1e69a88c7fa4c65aea5638f4715",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        }
+      ],
+      "versions": {
+        "initial": {
+          "index.html": "a9b5fe7fbc595e8be7b9ecc3e123d65eadb01f93f5c7ab86463d35c3915fb4bc",
+          "maintainer.md": "5f0e03994adc625a365674f43da9f59f07d9f29caf2f6bc4b1488ca192bd203d",
+          "requirements.md": "48651fe732142d3532a373b750a933ae5ececc420090c7a4b367e6035801b3df"
+        },
+        "last-retained": {
+          "index.html": "a9b5fe7fbc595e8be7b9ecc3e123d65eadb01f93f5c7ab86463d35c3915fb4bc",
+          "maintainer.md": "5f0e03994adc625a365674f43da9f59f07d9f29caf2f6bc4b1488ca192bd203d",
+          "requirements.md": "48651fe732142d3532a373b750a933ae5ececc420090c7a4b367e6035801b3df"
+        }
+      },
+      "project_limits": [
+        "Missing runtime file: release-01.md was announced but no full tool read is archived."
+      ],
+      "runtime_files_recovered_at_step": {},
+      "episode_source_license": null,
+      "rerun": "NOT_RUN"
+    },
+    {
+      "id": "f3750cae299def5e3ff7b603e473033e96c16a7c846c728a6cc857b3d4c63408",
+      "task": "frontend",
+      "split": "train",
+      "result": {
+        "state": "completed",
+        "reason": "verified_browser_result",
+        "executed_steps": 3
+      },
+      "teachers": [
+        "mimo-v2.6-pro"
+      ],
+      "requests": 2,
+      "events": 3,
+      "tool_returns": 0,
+      "edits": [
+        {
+          "step": 1,
+          "before": "starting-index.html",
+          "after": "version-01.html"
+        },
+        {
+          "step": 2,
+          "before": "version-01.html",
+          "after": "version-02.html"
+        }
+      ],
+      "media": [
+        {
+          "step": 0,
+          "event": 1,
+          "path": "images/9ba3d7ddc05bced98599b3ae9d0268f985df3f42c7b9d40b71093ee3f8264a60.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "9ba3d7ddc05bced98599b3ae9d0268f985df3f42c7b9d40b71093ee3f8264a60",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 0,
+          "event": 1,
+          "path": "images/28172c74043621b83b15c73f40693ab684984bcfed1b9bb1221076742b4d2979.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "28172c74043621b83b15c73f40693ab684984bcfed1b9bb1221076742b4d2979",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 1,
+          "path": "images/9ba3d7ddc05bced98599b3ae9d0268f985df3f42c7b9d40b71093ee3f8264a60.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "9ba3d7ddc05bced98599b3ae9d0268f985df3f42c7b9d40b71093ee3f8264a60",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 1,
+          "path": "images/28172c74043621b83b15c73f40693ab684984bcfed1b9bb1221076742b4d2979.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "28172c74043621b83b15c73f40693ab684984bcfed1b9bb1221076742b4d2979",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 1,
+          "event": 2,
+          "path": "images/72c67616ed7f26b0b3c136361bad4b204de8b14a6e3d65a20acc6d6af1134d81.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "72c67616ed7f26b0b3c136361bad4b204de8b14a6e3d65a20acc6d6af1134d81",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 1,
+          "event": 2,
+          "path": "images/5e53af315ef8b2ecd7bf63ffd3aa207f61d19ae7d50576bc6a9eb94ed0a12b5b.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "5e53af315ef8b2ecd7bf63ffd3aa207f61d19ae7d50576bc6a9eb94ed0a12b5b",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "path": "images/72c67616ed7f26b0b3c136361bad4b204de8b14a6e3d65a20acc6d6af1134d81.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "72c67616ed7f26b0b3c136361bad4b204de8b14a6e3d65a20acc6d6af1134d81",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "path": "images/5e53af315ef8b2ecd7bf63ffd3aa207f61d19ae7d50576bc6a9eb94ed0a12b5b.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "5e53af315ef8b2ecd7bf63ffd3aa207f61d19ae7d50576bc6a9eb94ed0a12b5b",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "event": 3,
+          "path": "images/7b1aeb30860ec5214e54bda7210e47d0efce215b2d1bbf167119db7b50c93270.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "7b1aeb30860ec5214e54bda7210e47d0efce215b2d1bbf167119db7b50c93270",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "event": 3,
+          "path": "images/4ec1deb214dacc9884e8c3d2b17e9847404e156c22714323c0225bec7b103f2e.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "4ec1deb214dacc9884e8c3d2b17e9847404e156c22714323c0225bec7b103f2e",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        }
+      ],
+      "versions": {
+        "initial": {
+          "index.html": "6463733aeab7ae318c7fcd0d0d175ff5bf98f81c177ac61a65cc6eb459a66a4b"
+        },
+        "version-01.html": {
+          "index.html": "a89ad4c2f0f00e88ea277b841d0e9e66731a9f2b23e2740997338398091f761e"
+        },
+        "version-02.html": {
+          "index.html": "2aa116ff487e4538be21876c9ad50a910f1491205666273a64e5ce60c7444239"
+        },
+        "last-retained": {
+          "index.html": "2aa116ff487e4538be21876c9ad50a910f1491205666273a64e5ce60c7444239"
+        }
+      },
+      "project_limits": [],
+      "runtime_files_recovered_at_step": {},
+      "episode_source_license": null,
+      "rerun": "NOT_RUN"
+    },
+    {
+      "id": "789de9a5d13f73918d47f5aa4dbf7c438ab95f02dd6ff1db5e032f835c319ed1",
+      "task": "frontend",
+      "split": "train",
+      "result": {
+        "state": "failed",
+        "reason": "browser_checks_failed",
+        "executed_steps": 3
+      },
+      "teachers": [
+        "mimo-v2.6-pro"
+      ],
+      "requests": 3,
+      "events": 3,
+      "tool_returns": 0,
+      "edits": [
+        {
+          "step": 1,
+          "before": null,
+          "after": "version-01.html"
+        },
+        {
+          "step": 2,
+          "before": "version-01.html",
+          "after": "version-02.html"
+        },
+        {
+          "step": 3,
+          "before": "version-02.html",
+          "after": "version-03.html"
+        }
+      ],
+      "media": [
+        {
+          "step": 1,
+          "event": 1,
+          "path": "images/aafab95cb7d9264a3662f03d69e04eb54e80390dd0c11282ef90276ab392c670.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "aafab95cb7d9264a3662f03d69e04eb54e80390dd0c11282ef90276ab392c670",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 1,
+          "event": 1,
+          "path": "images/75830b0309feeab439092146f488372bb1e91bcf44ac30dea86eb8e2c62ead41.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "75830b0309feeab439092146f488372bb1e91bcf44ac30dea86eb8e2c62ead41",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "path": "images/aafab95cb7d9264a3662f03d69e04eb54e80390dd0c11282ef90276ab392c670.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "aafab95cb7d9264a3662f03d69e04eb54e80390dd0c11282ef90276ab392c670",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "path": "images/75830b0309feeab439092146f488372bb1e91bcf44ac30dea86eb8e2c62ead41.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "75830b0309feeab439092146f488372bb1e91bcf44ac30dea86eb8e2c62ead41",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "event": 2,
+          "path": "images/da6cbe88653ffd6355c8720286aae987b7aaed1ea910784c5595c3dd03a421ec.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "da6cbe88653ffd6355c8720286aae987b7aaed1ea910784c5595c3dd03a421ec",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "event": 2,
+          "path": "images/29701ec6105a747bc5695218d79f4dac724e867b04c5dec1aeccf5af1f6f59de.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "29701ec6105a747bc5695218d79f4dac724e867b04c5dec1aeccf5af1f6f59de",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 3,
+          "path": "images/da6cbe88653ffd6355c8720286aae987b7aaed1ea910784c5595c3dd03a421ec.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "da6cbe88653ffd6355c8720286aae987b7aaed1ea910784c5595c3dd03a421ec",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 3,
+          "path": "images/29701ec6105a747bc5695218d79f4dac724e867b04c5dec1aeccf5af1f6f59de.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "29701ec6105a747bc5695218d79f4dac724e867b04c5dec1aeccf5af1f6f59de",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 3,
+          "event": 3,
+          "path": "images/331bc484c8ad9e1ff5ef68703862bc8dd65433ee4e268349f931f23d40df38dd.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "331bc484c8ad9e1ff5ef68703862bc8dd65433ee4e268349f931f23d40df38dd",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 3,
+          "event": 3,
+          "path": "images/42b56bd2d4b82f4cc58dba198923289d21fac72e3b6b196bbde265bd81051e0c.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "42b56bd2d4b82f4cc58dba198923289d21fac72e3b6b196bbde265bd81051e0c",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        }
+      ],
+      "versions": {
+        "initial": {},
+        "version-01.html": {
+          "index.html": "9c6aeeafd8148cf508a073623db85962ff26ff790fc9973a67c9f5eeb970ea3a"
+        },
+        "version-02.html": {
+          "index.html": "6f1886b57b2a62d71591e396f0c3900a27b7289fb1773a03e8725dec2577b2d6"
+        },
+        "version-03.html": {
+          "index.html": "d5dc3484c9a51c5e71d3537919f0df3547baefa2918025791f3b967a0f07d658"
+        },
+        "last-retained": {
+          "index.html": "d5dc3484c9a51c5e71d3537919f0df3547baefa2918025791f3b967a0f07d658"
+        }
+      },
+      "project_limits": [],
+      "runtime_files_recovered_at_step": {},
+      "episode_source_license": null,
+      "rerun": "NOT_RUN"
+    },
+    {
+      "id": "3c41a4046bf9db483670d737c0cc996bb5a86f4381e5cebd0e90da290e14a554",
+      "task": "frontend",
+      "split": "train",
+      "result": {
+        "state": "incomplete",
+        "reason": "no_complete_html",
+        "executed_steps": 1
+      },
+      "teachers": [
+        "mimo-v2.6-pro"
+      ],
+      "requests": 2,
+      "events": 1,
+      "tool_returns": 0,
+      "edits": [],
+      "media": [
+        {
+          "step": 0,
+          "event": 1,
+          "path": "images/11ad7c90306b09928eb6034e5badf743e4292951b015c5c2a8fe706a7da6d451.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "11ad7c90306b09928eb6034e5badf743e4292951b015c5c2a8fe706a7da6d451",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 0,
+          "event": 1,
+          "path": "images/8c59062789fdce58c97a1b3e9b898ecbde5f2d54cec9ef430f1a93b69f0bd755.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "8c59062789fdce58c97a1b3e9b898ecbde5f2d54cec9ef430f1a93b69f0bd755",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 1,
+          "path": "images/11ad7c90306b09928eb6034e5badf743e4292951b015c5c2a8fe706a7da6d451.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "11ad7c90306b09928eb6034e5badf743e4292951b015c5c2a8fe706a7da6d451",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 1,
+          "path": "images/8c59062789fdce58c97a1b3e9b898ecbde5f2d54cec9ef430f1a93b69f0bd755.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "8c59062789fdce58c97a1b3e9b898ecbde5f2d54cec9ef430f1a93b69f0bd755",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "path": "images/11ad7c90306b09928eb6034e5badf743e4292951b015c5c2a8fe706a7da6d451.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "11ad7c90306b09928eb6034e5badf743e4292951b015c5c2a8fe706a7da6d451",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "path": "images/8c59062789fdce58c97a1b3e9b898ecbde5f2d54cec9ef430f1a93b69f0bd755.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "8c59062789fdce58c97a1b3e9b898ecbde5f2d54cec9ef430f1a93b69f0bd755",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        }
+      ],
+      "versions": {
+        "initial": {
+          "index.html": "12e8f6dc6afe7ae16d603a815a764f7c7062a3af8bd5b18c395105c983e09c8a"
+        },
+        "last-retained": {
+          "index.html": "12e8f6dc6afe7ae16d603a815a764f7c7062a3af8bd5b18c395105c983e09c8a"
+        }
+      },
+      "project_limits": [],
+      "runtime_files_recovered_at_step": {},
+      "episode_source_license": null,
+      "rerun": "NOT_RUN"
+    },
+    {
+      "id": "a48009977f37e2817ae3bb01b9678b51efc02418562a24d14c08b9bc97668dd9",
+      "task": "agent",
+      "split": "train",
+      "result": {
+        "state": "incomplete",
+        "reason": "request_unavailable",
+        "executed_steps": 12
+      },
+      "teachers": [
+        "mimo-v2.6-pro"
+      ],
+      "requests": 12,
+      "events": 12,
+      "tool_returns": 12,
+      "edits": [
+        {
+          "step": 9,
+          "before": "starting-index.html",
+          "after": "version-09.html"
+        },
+        {
+          "step": 10,
+          "before": "version-09.html",
+          "after": "version-10.html"
+        },
+        {
+          "step": 11,
+          "before": "version-10.html",
+          "after": "version-11.html"
+        }
+      ],
+      "media": [
+        {
+          "step": 7,
+          "event": 7,
+          "path": "images/e031a700301672d546b5457d33b14939800e0dd2790dcb18c18f31948f8303e2.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "e031a700301672d546b5457d33b14939800e0dd2790dcb18c18f31948f8303e2",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 7,
+          "event": 7,
+          "path": "images/f8b00b2592880567c11884ec935ffa74c6b6310aedae61d4c14ae05cc1b1427c.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "f8b00b2592880567c11884ec935ffa74c6b6310aedae61d4c14ae05cc1b1427c",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 8,
+          "path": "images/e031a700301672d546b5457d33b14939800e0dd2790dcb18c18f31948f8303e2.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "e031a700301672d546b5457d33b14939800e0dd2790dcb18c18f31948f8303e2",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 8,
+          "path": "images/f8b00b2592880567c11884ec935ffa74c6b6310aedae61d4c14ae05cc1b1427c.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "f8b00b2592880567c11884ec935ffa74c6b6310aedae61d4c14ae05cc1b1427c",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 9,
+          "path": "images/e031a700301672d546b5457d33b14939800e0dd2790dcb18c18f31948f8303e2.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "e031a700301672d546b5457d33b14939800e0dd2790dcb18c18f31948f8303e2",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 9,
+          "path": "images/f8b00b2592880567c11884ec935ffa74c6b6310aedae61d4c14ae05cc1b1427c.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "f8b00b2592880567c11884ec935ffa74c6b6310aedae61d4c14ae05cc1b1427c",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 12,
+          "event": 12,
+          "path": "images/3a357279b10137ea88ead9f8633d7bffd420104e640ec24646fbb011ffbe8b9a.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "3a357279b10137ea88ead9f8633d7bffd420104e640ec24646fbb011ffbe8b9a",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 12,
+          "event": 12,
+          "path": "images/73398370ddf33396bc19296868d1d9b9ed5e8b2121594993f4070931b3cf3523.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "73398370ddf33396bc19296868d1d9b9ed5e8b2121594993f4070931b3cf3523",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        }
+      ],
+      "versions": {
+        "initial": {
+          "index.html": "067e2c2dc1bcd899374544c0eb7ecf429e3e3c34097a7146e8352302d16c837b",
+          "requirements.md": "3a4e977beec6daab96c6cd7c6f29c9aa1ee80df3b7d8c0987c96837a5ff6c518"
+        },
+        "version-09.html": {
+          "index.html": "c6c5d7b807de86faf768c2028f93d72425c26df6bdddc2c3d84b4296db448c9a",
+          "requirements.md": "3a4e977beec6daab96c6cd7c6f29c9aa1ee80df3b7d8c0987c96837a5ff6c518",
+          "release-note.md": "47233423c8aafaa351bcdf27b36d08c2a2ee6b33d07014171a80f66e995b94ca"
+        },
+        "version-10.html": {
+          "index.html": "8bf9860e53863bf8602802d397e85e1e60569b2ee978b2e2c0c265c9c91d6a87",
+          "requirements.md": "3a4e977beec6daab96c6cd7c6f29c9aa1ee80df3b7d8c0987c96837a5ff6c518",
+          "release-note.md": "47233423c8aafaa351bcdf27b36d08c2a2ee6b33d07014171a80f66e995b94ca"
+        },
+        "version-11.html": {
+          "index.html": "c7d416f2fb3ced556ad7aa6dcefd646cae5f7b20b41b947929ac6c0dad7a90a5",
+          "requirements.md": "3a4e977beec6daab96c6cd7c6f29c9aa1ee80df3b7d8c0987c96837a5ff6c518",
+          "release-note.md": "47233423c8aafaa351bcdf27b36d08c2a2ee6b33d07014171a80f66e995b94ca"
+        },
+        "last-retained": {
+          "index.html": "c7d416f2fb3ced556ad7aa6dcefd646cae5f7b20b41b947929ac6c0dad7a90a5",
+          "requirements.md": "3a4e977beec6daab96c6cd7c6f29c9aa1ee80df3b7d8c0987c96837a5ff6c518",
+          "release-note.md": "47233423c8aafaa351bcdf27b36d08c2a2ee6b33d07014171a80f66e995b94ca"
+        }
+      },
+      "project_limits": [],
+      "runtime_files_recovered_at_step": {
+        "release-note.md": 8
+      },
+      "episode_source_license": null,
+      "rerun": "NOT_RUN"
+    },
+    {
+      "id": "1048de6aaba5c2d40cb9759d880251af2b2078407bd4673a377f2fb887b20f59",
+      "task": "frontend",
+      "split": "train",
+      "result": {
+        "state": "completed",
+        "reason": "verified_browser_result",
+        "executed_steps": 2
+      },
+      "teachers": [
+        "mimo-v2.6-pro"
+      ],
+      "requests": 2,
+      "events": 2,
+      "tool_returns": 0,
+      "edits": [
+        {
+          "step": 1,
+          "before": null,
+          "after": "version-01.html"
+        },
+        {
+          "step": 2,
+          "before": "version-01.html",
+          "after": "version-02.html"
+        }
+      ],
+      "media": [
+        {
+          "step": 1,
+          "event": 1,
+          "path": "images/14b21093bd6b237973792949c489b966aa36c1883f84cec5e522b572d60ba222.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "14b21093bd6b237973792949c489b966aa36c1883f84cec5e522b572d60ba222",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 1,
+          "event": 1,
+          "path": "images/987928bb56a87073913a7a915523e64f07bb8237e3e27b79b61d4f9c1674864f.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "987928bb56a87073913a7a915523e64f07bb8237e3e27b79b61d4f9c1674864f",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "path": "images/14b21093bd6b237973792949c489b966aa36c1883f84cec5e522b572d60ba222.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "14b21093bd6b237973792949c489b966aa36c1883f84cec5e522b572d60ba222",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "path": "images/987928bb56a87073913a7a915523e64f07bb8237e3e27b79b61d4f9c1674864f.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "987928bb56a87073913a7a915523e64f07bb8237e3e27b79b61d4f9c1674864f",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Recorded teacher input",
+          "ordinal": 2,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "event": 2,
+          "path": "images/c3b81170548a7b87eced8164c4767189890d634b489d5cb24ced1549c58b1a77.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "c3b81170548a7b87eced8164c4767189890d634b489d5cb24ced1549c58b1a77",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 2,
+          "event": 2,
+          "path": "images/77eb551c3f432bdfad75310a62070c15cf9b07cdf4b8fbc0f0e1992ec48c9900.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "77eb551c3f432bdfad75310a62070c15cf9b07cdf4b8fbc0f0e1992ec48c9900",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        }
+      ],
+      "versions": {
+        "initial": {},
+        "version-01.html": {
+          "index.html": "0638d30287c38d7b8795d8e8b41c779cc18c6a105e92d18707e5bac4da48678b"
+        },
+        "version-02.html": {
+          "index.html": "d019427b73b5415fd3a80cc29833d691071c8f6d14964b701fab71dd641d5cdd"
+        },
+        "last-retained": {
+          "index.html": "d019427b73b5415fd3a80cc29833d691071c8f6d14964b701fab71dd641d5cdd"
+        }
+      },
+      "project_limits": [],
+      "runtime_files_recovered_at_step": {},
+      "episode_source_license": null,
+      "rerun": "NOT_RUN"
+    },
+    {
+      "id": "7fb44a3db520ddb3c240e8ba390274e13f09a9abc403ea34cf4ca5bd7209ac60",
+      "task": "direct",
+      "split": "train",
+      "result": {
+        "state": "completed",
+        "reason": "verified_browser_result",
+        "executed_steps": 1
+      },
+      "teachers": [
+        "mimo-v2.6-pro"
+      ],
+      "requests": 1,
+      "events": 1,
+      "tool_returns": 0,
+      "edits": [
+        {
+          "step": 1,
+          "before": null,
+          "after": "version-01.html"
+        }
+      ],
+      "media": [
+        {
+          "step": 1,
+          "event": 1,
+          "path": "images/568879c1ee9477cc92b4458b8e913de1806b56483b3e295c4e278543cd696d24.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "568879c1ee9477cc92b4458b8e913de1806b56483b3e295c4e278543cd696d24",
+          "size": [
+            1440,
+            900
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 1,
+          "status": "verified"
+        },
+        {
+          "step": 1,
+          "event": 1,
+          "path": "images/b57e5c0d06faacc50ccff3ba6cd73941ccc33e6f765b717841597534e450c628.png",
+          "shard": "mimo-episode-media-v1-004.tar",
+          "sha256": "b57e5c0d06faacc50ccff3ba6cd73941ccc33e6f765b717841597534e450c628",
+          "size": [
+            390,
+            844
+          ],
+          "role": "Archived tool preview",
+          "ordinal": 2,
+          "status": "verified"
+        }
+      ],
+      "versions": {
+        "initial": {},
+        "version-01.html": {
+          "index.html": "b52d877454b488f7d0236b982f4ac8134e29ea759d02cf29486713fc041ac3c0"
+        },
+        "last-retained": {
+          "index.html": "b52d877454b488f7d0236b982f4ac8134e29ea759d02cf29486713fc041ac3c0"
+        }
+      },
+      "project_limits": [],
+      "runtime_files_recovered_at_step": {},
+      "episode_source_license": null,
+      "rerun": "NOT_RUN"
+    },
+    {
+      "id": "0857be4d40e62f85c957f4de8552178e47ae70b36a62b0ff13847d579a823c12",
+      "task": "files",
+      "split": "train",
+      "result": {
+        "state": "incomplete",
+        "reason": "invalid_action_schema",
+        "executed_steps": 1
+      },
+      "teachers": [
+        "mimo-v2.6-pro"
+      ],
+      "requests": 2,
+      "events": 0,
+      "tool_returns": 1,
+      "edits": [],
+      "media": [],
+      "versions": {
+        "initial": {
+          "README.txt": "c4d8277456dd059be71682ce00ae5dc6be5deeff750c87a676dbb8549cdef210",
+          "archive.csv": "110ee7062551adb41f19c993c58adf476e919c209e237188dd29a173a84ded31"
+        },
+        "last-retained": {
+          "README.txt": "c4d8277456dd059be71682ce00ae5dc6be5deeff750c87a676dbb8549cdef210",
+          "archive.csv": "110ee7062551adb41f19c993c58adf476e919c209e237188dd29a173a84ded31"
+        }
+      },
+      "project_limits": [],
+      "runtime_files_recovered_at_step": {},
+      "episode_source_license": null,
+      "rerun": "NOT_RUN"
+    }
+  ]
+}

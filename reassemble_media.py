@@ -34,31 +34,53 @@ def verify(entry, folder, target):
         raise ValueError(f"Bad logical asset: {name(entry['name'])}")
 
 
+def rebuild(entry, folder, out):
+    asset = entry["name"]
+    if not out or not entry.get("parts"):
+        verify(entry, folder, None)
+        return
+    result = out / asset
+    if result.exists():
+        # Recheck a previous run's output without needing to keep its chunks.
+        verify({**entry, "parts": []}, out, None)
+        return
+    out.mkdir(parents=True, exist_ok=True)
+    work = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=out, delete=False) as f:
+            work = Path(f.name)
+            verify(entry, folder, f)
+        work.rename(result)
+    finally:
+        if work is not None:
+            work.unlink(missing_ok=True)
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("manifest", type=Path)
     p.add_argument("--asset", action="append", help="A logical asset name; omit to check all")
-    p.add_argument("--out", type=Path, help="Rebuild split files into this directory; default only verifies")
+    mode = p.add_mutually_exclusive_group()
+    mode.add_argument("--out", type=Path, help="Rebuild split files into this directory; default only verifies")
+    mode.add_argument("--list-parts", action="store_true", help="List exact download names without reading assets")
     args = p.parse_args()
     catalog = {name(x["name"]): x for x in json.loads(args.manifest.read_text())["files"]}
     for asset in args.asset or catalog:
+        if asset not in catalog:
+            p.error(f"Unknown logical asset: {asset}")
         entry = catalog[asset]
-        if args.out and entry.get("parts"):
-            args.out.mkdir(parents=True, exist_ok=True)
-            result = args.out / asset
-            if result.exists():
-                raise FileExistsError(result)
-            work = None
-            try:
-                with tempfile.NamedTemporaryFile(dir=args.out, delete=False) as f:
-                    work = Path(f.name)
-                    verify(entry, args.manifest.parent, f)
-                work.rename(result)
-            finally:
-                if work is not None:
-                    work.unlink(missing_ok=True)
-        else:
-            verify(entry, args.manifest.parent, None)
+        if args.list_parts:
+            for part in entry.get("parts") or [entry]:
+                print(name(part["name"]))
+            continue
+        try:
+            rebuild(entry, args.manifest.parent, args.out)
+        except FileNotFoundError as exc:
+            missing = [part["name"] for part in entry.get("parts") or [entry]
+                       if not (args.manifest.parent / name(part["name"])).is_file()]
+            if not missing:
+                raise
+            raise FileNotFoundError(f"{asset}: missing download(s): {', '.join(missing)}") from exc
         print(f"Verified: {asset}")
 
 
