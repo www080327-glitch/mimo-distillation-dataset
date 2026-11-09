@@ -58,7 +58,7 @@ def audit(manifests, legacy=None):
         production["v1.2.0"] = {**manifest, "episode_ids": legacy_ids(legacy, manifest)}
 
     seen, rows, issues = set(), [], []
-    complete = True
+    complete = "v1.2.0" in production
     for version, manifest in sorted(production.items(), key=lambda x: version_key(x[0])):
         ids = manifest.get("episode_ids")
         if ids is None:
@@ -73,11 +73,14 @@ def audit(manifests, legacy=None):
             predecessors.append(manifest["previous_release"])
         dependencies = [x["version"] for x in reused_bases(manifest)]
         for undeclared in undeclared_reuse(manifest):
+            complete = False
             issues.append(f"{version}: reused base {undeclared} has no archive declaration")
         for related in dict.fromkeys(predecessors + dependencies):
             if version_key(related) >= version_key(version):
+                complete = False
                 issues.append(f"{version}: invalid forward reference to {related}")
             elif related not in production:
+                complete = False
                 issues.append(f"{version}: missing production manifest for {related}")
         declared = manifest.get("cumulative_unique_abc_episodes")
         if complete and declared is not None and declared != len(seen):

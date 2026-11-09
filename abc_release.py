@@ -303,7 +303,11 @@ def read_spooled(path):
 
 
 def release_version(manifest):
-    version = manifest["version"]
+    if not isinstance(manifest, dict):
+        raise ValueError("Manifest must be a JSON object")
+    version = manifest.get("version")
+    if not isinstance(version, str) or not version:
+        raise ValueError("Manifest must contain a non-empty string version")
     if not re.fullmatch(r"v1\.(?:[2-9]|[1-9][0-9]+)\.\d+", version) or manifest.get("schema_version", 1) != 1:
         raise ValueError(f"Unsupported A/B/C release format: {version}")
     return version

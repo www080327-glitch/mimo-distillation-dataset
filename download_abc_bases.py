@@ -9,7 +9,7 @@ import re
 import time
 from urllib.error import HTTPError
 
-from abc_release import base_filename, reused_bases, undeclared_reuse
+from abc_release import base_filename, release_version, reused_bases, undeclared_reuse
 from download_release import REPO, digest, download
 from reassemble_media import name
 
@@ -77,6 +77,7 @@ def main():
     args = p.parse_args()
     try:
         manifest = json.loads(args.manifest.read_text())
+        version = release_version(manifest)
         plan = base_plan(manifest)
     except (ValueError, OSError, KeyError, TypeError) as exc:
         p.error(str(exc))
@@ -85,7 +86,7 @@ def main():
             rows = list(pool.map(lambda entry: check(entry, args.directory, True), plan))
     else:
         rows = [check(entry, args.directory, False) for entry in plan]
-    print(json.dumps({"release": manifest["version"], "bases": rows}, indent=2))
+    print(json.dumps({"release": version, "bases": rows}, indent=2))
     return int(any(row["status"] != "ready" for row in rows))
 
 

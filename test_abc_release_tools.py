@@ -12,6 +12,7 @@ from threading import Thread
 import unittest
 
 from abc_release import PNG
+from audit_abc_releases import audit
 from download_abc_bases import fetch_base
 from export_replay import export
 
@@ -76,6 +77,27 @@ class ReleaseToolsTest(unittest.TestCase):
                                capture_output=True, text=True, timeout=10)
             self.assertEqual(p.returncode, 2)
             self.assertIn("v1.3.0", p.stderr)
+            self.assertFalse(out.exists())
+
+    def test_partial_production_chain_does_not_verify_cumulative_claim(self):
+        report = audit([{"version": "v1.9.0", "previous_release": "v1.8.0",
+                         "episodes": 1, "episode_ids": [ID], "cumulative_unique_abc_episodes": 1332}])
+        self.assertEqual(report["known_unique"], 1)
+        self.assertFalse(report["unique_complete"])
+        self.assertIsNone(report["cumulative_unique"])
+        self.assertEqual(report["issues"], ["v1.9.0: missing production manifest for v1.8.0"])
+
+    def test_base_planner_requires_primary_release_version(self):
+        with TemporaryDirectory() as tmp:
+            t = Path(tmp)
+            manifest = t / "MANIFEST.json"
+            manifest.write_text('{"dependencies":[]}')
+            out = t / "download"
+            p = subprocess.run([sys.executable, str(TOOLS / "download_abc_bases.py"), str(manifest), str(out), "--fetch"],
+                               capture_output=True, text=True, timeout=10)
+            self.assertEqual(p.returncode, 2)
+            self.assertIn("version", p.stderr)
+            self.assertNotIn("Traceback", p.stderr)
             self.assertFalse(out.exists())
 
     def test_transient_gateway_failure_retries_one_resumed_range(self):
