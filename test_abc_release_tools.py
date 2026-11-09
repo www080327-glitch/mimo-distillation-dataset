@@ -17,6 +17,8 @@ from check_abc_release import check as check_release
 from download_abc_bases import fetch_base
 from export_replay import export, plan
 from restore_replay_step import workspace_at
+from replay_episode import zipped
+from verify_step_receipt import verify as verify_step
 from verify_abc_tallies import verify as verify_tallies
 from verify_replay_sample import verify
 
@@ -149,6 +151,20 @@ class ReleaseToolsTest(unittest.TestCase):
         rows["single_edit"][0]["audit_assets"]["before"] = edited
         with self.assertRaisesRegex(ValueError, "version gap"):
             workspace_at(rows, 1)
+
+    def test_step_receipt_checks_each_file_after_zip_digest(self):
+        with TemporaryDirectory() as tmp:
+            archive = Path(tmp) / "step.zip"
+            content = b"recorded file"
+            raw = zipped({"index.html": content}, reproducible=True)
+            archive.write_bytes(raw)
+            receipt = {"release": "v1.9.0", "episode_id": ID, "step": 0,
+                       "zip_sha256": hashlib.sha256(raw).hexdigest(),
+                       "files": {"index.html": hashlib.sha256(content).hexdigest()}}
+            self.assertEqual(verify_step(archive, receipt)["files_verified"], 1)
+            receipt["files"]["index.html"] = "0" * 64
+            with self.assertRaisesRegex(ValueError, "Incorrect file SHA-256"):
+                verify_step(archive, receipt)
 
     def test_tally_verifier_does_not_trust_manifest_counts(self):
         with TemporaryDirectory() as tmp:

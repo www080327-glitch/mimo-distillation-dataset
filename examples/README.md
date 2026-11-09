@@ -132,3 +132,12 @@ gaps rather than reconstructed by guesswork.
 
 `restore_replay_step.py --receipt step.json` writes the episode ID, step,
 verified file hashes and deterministic ZIP hash in a separate JSON file.
+
+To check a received step ZIP against its receipt without extracting it:
+
+```sh
+python3 verify_step_receipt.py step-8.zip step-8.json
+```
+
+This checks the ZIP and its members against the supplied receipt. It does
+not authenticate the original release; use the pinned release check for that.
