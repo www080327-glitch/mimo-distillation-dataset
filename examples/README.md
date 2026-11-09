@@ -47,3 +47,11 @@ python3 replay_episode.py mimo-nextgen-abc-v1.3.0.tar.gz --abc-tar \
 The viewer labels teacher input images separately from tool previews. It shows recorded edits and offers separate initial and retained project ZIPs when all their files are available. It doesn't execute the episode code. A missing base shows actionable errors; other recorded content remains readable.
 
 For release checks, use `--receipt recovery.json --strict` in place of `--port 11840`. A missing or invalid asset in a selected episode exits 1 after writing the receipt. Use `--ids` to select specific full episode IDs; omit it to inspect all episodes in the tar.
+
+If a large download was interrupted, save its release checksum file and use the
+resumable downloader. Re-run the same command to continue the `.part` file;
+the final filename appears only after SHA-256 verification.
+
+```sh
+python3 download_release.py v1.3.0 mimo-nextgen-abc-v1.3.0.tar.gz SHA256SUMS downloads
+```
