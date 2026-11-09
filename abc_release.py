@@ -167,6 +167,14 @@ a:focus-visible,summary:focus-visible{outline:3px solid #175f9c;outline-offset:3
             " · Recorded evidence only. Project code is shown as text.</p>" + body + "</main></html>").encode()
 
 
+def diff_text(ref, assets, errors):
+    try:
+        return assets.get(ref).decode("utf-8")
+    except (ValueError, UnicodeError) as exc:
+        errors.add(str(exc))
+        return None
+
+
 def episode(ident, rows, assets, zips):
     final = rows["final_task_to_html"][0]
     errors, downloads, projects = set(), [], {}
@@ -207,22 +215,24 @@ def episode(ident, rows, assets, zips):
         detail = obs["observation"]
         images = figures(detail.get("before_views", []), assets, "Tool preview before source change" if render else "", errors)
         images += figures(detail.get("views", []), assets, "Tool preview screenshot" if render else "", errors)
+        changes = []
         for change in obs["environment_changes"]:
             figures(change, assets, "", errors)
+            diff = diff_text(change["diff"], assets, errors) if change.get("diff") else None
+            if render:
+                content = "<p>No readable verified diff.</p>" if diff is None else f"<pre>{escape(diff)}</pre>"
+                changes.append(f"<section><h3>External source change at step {obs['step']}: "
+                               f"{escape(change['file'])}</h3>{content}</section>")
         if render:
             body.append(f"<details><summary>Tool step {obs['step']}: {escape(obs['event'])}</summary>" +
-                        images + json_text(obs) + "</details>")
+                        images + "".join(changes) + json_text(obs) + "</details>")
     figures(final, assets, "", errors)
     if render:
         body.append("<details><summary>Recorded requirements and files</summary>" + json_text(final) + "</details>")
     for edit in rows["single_edit"]:
         audit = edit["audit_assets"]
         figures(audit, assets, "", errors)
-        try:
-            diff = assets.get(audit["diff"]).decode("utf-8")
-        except (ValueError, UnicodeError) as exc:
-            errors.add(str(exc))
-            diff = ""
+        diff = diff_text(audit["diff"], assets, errors) or ""
         if render:
             body.append(f"<details><summary>Edit at step {edit['step']}: {escape(edit['file'])}</summary>"
                         f"<pre>{escape(diff)}</pre></details>")

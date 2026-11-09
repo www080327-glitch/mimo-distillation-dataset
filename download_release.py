@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """Resume one anonymous MiMo Release asset and verify it before giving it its final name."""
 import argparse
+from contextlib import ExitStack
 import hashlib
 from http.client import HTTPException
 from pathlib import Path
 import re
 import sys
+from tempfile import TemporaryDirectory
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
@@ -45,38 +47,45 @@ def download(url, expected, target):
     headers = {"Accept-Encoding": "identity"}
     if offset:
         headers["Range"] = f"bytes={offset}-"
-    with urlopen(Request(url, headers=headers), timeout=30) as response:
-        if response.headers.get("Content-Encoding", "identity").lower() != "identity":
-            raise ValueError("Unexpected content encoding; no bytes appended")
-        if response.status == 206:
-            m = re.fullmatch(r"bytes (\d+)-(\d+)/(\d+)", response.headers.get("Content-Range", ""))
-            if not m or int(m[1]) != offset or not offset <= int(m[2]) < int(m[3]):
-                raise ValueError("Content-Range does not match the saved offset; no bytes appended")
-            limit = int(m[2]) - offset + 1
-            mode = "ab"
-        elif response.status == 200:
-            length = response.headers.get("Content-Length")
-            limit = int(length) if length else None
-            mode = "wb"
-        else:
-            raise ValueError(f"Unexpected HTTP status {response.status}")
-        # Don't truncate an earlier partial file when a fresh response has no body.
-        chunk = response.read1(BLOCK)
-        if not chunk:
-            raise ValueError("Empty response; previous partial file kept")
-        count = 0
-        with part.open(mode) as out:
-            while chunk:
-                count += len(chunk)
-                if limit is not None and count > limit:
-                    raise ValueError("Response exceeds its declared byte range")
-                out.write(chunk)
-                chunk = response.read1(BLOCK)
-    if limit is not None and count != limit:
-        raise ValueError("Transfer interrupted; retry to resume the partial file")
-    if digest(part) != expected:
-        raise ValueError("SHA-256 has not matched; partial file kept")
-    part.replace(target)
+    with ExitStack() as staging:
+        output = part
+        with urlopen(Request(url, headers=headers), timeout=30) as response:
+            if response.headers.get("Content-Encoding", "identity").lower() != "identity":
+                raise ValueError("Unexpected content encoding; no bytes appended")
+            if response.status == 206:
+                m = re.fullmatch(r"bytes (\d+)-(\d+)/(\d+)", response.headers.get("Content-Range", ""))
+                if not m or int(m[1]) != offset or not offset <= int(m[2]) < int(m[3]):
+                    raise ValueError("Content-Range does not match the saved offset; no bytes appended")
+                limit = int(m[2]) - offset + 1
+                mode = "ab"
+            elif response.status == 200:
+                length = response.headers.get("Content-Length")
+                limit = int(length) if length else None
+                mode = "wb"
+                if offset:
+                    # The origin ignored Range; keep the old prefix until the replacement verifies.
+                    output = Path(staging.enter_context(TemporaryDirectory(dir=target.parent))) / part.name
+            else:
+                raise ValueError(f"Unexpected HTTP status {response.status}")
+            # Don't truncate an earlier partial file when a fresh response has no body.
+            chunk = response.read1(BLOCK)
+            if not chunk:
+                raise ValueError("Empty response; previous partial file kept")
+            count = 0
+            with output.open(mode) as out:
+                while chunk:
+                    count += len(chunk)
+                    if limit is not None and count > limit:
+                        raise ValueError("Response exceeds its declared byte range")
+                    out.write(chunk)
+                    chunk = response.read1(BLOCK)
+        if limit is not None and count != limit:
+            raise ValueError("Transfer interrupted; retry to resume the partial file")
+        if digest(output) != expected:
+            raise ValueError("SHA-256 has not matched; partial file kept")
+        output.replace(target)
+        if output != part:
+            part.unlink()
 
 
 def main():
