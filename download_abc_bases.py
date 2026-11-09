@@ -15,20 +15,22 @@ from download_release import REPO, digest, download
 from reassemble_media import name
 
 
+def embedded_manifest(source):
+    with tarfile.open(fileobj=source, mode="r|gz") as archive:
+        for member in archive:
+            if member.name == "MANIFEST.json":
+                if not member.isfile():
+                    raise ValueError("Embedded MANIFEST.json is not a regular file")
+                with archive.extractfile(member) as embedded:
+                    return embedded.read()
+    raise ValueError("Archive has no embedded MANIFEST.json")
+
+
 def read_manifest(path):
     with path.open("rb") as source:
         compressed = source.read(2) == b"\x1f\x8b"
         source.seek(0)
-        if not compressed:
-            return json.load(source)
-        with tarfile.open(fileobj=source, mode="r|gz") as archive:
-            for member in archive:
-                if member.name == "MANIFEST.json":
-                    if not member.isfile():
-                        raise ValueError("Embedded MANIFEST.json is not a regular file")
-                    with archive.extractfile(member) as embedded:
-                        return json.load(embedded)
-    raise ValueError("Archive has no embedded MANIFEST.json")
+        return json.loads(embedded_manifest(source)) if compressed else json.load(source)
 
 
 def base_plan(manifest):

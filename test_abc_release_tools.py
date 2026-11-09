@@ -13,6 +13,7 @@ import unittest
 
 from abc_release import PNG
 from audit_abc_releases import audit
+from check_abc_release import check as check_release
 from download_abc_bases import fetch_base
 from export_replay import export, plan
 from restore_replay_step import workspace_at
@@ -26,6 +27,14 @@ ID = "a" * 20
 def asset(data, suffix):
     sha = hashlib.sha256(data).hexdigest()
     return {"file": f"assets/{sha}.{suffix}", "sha256": sha}
+
+
+def write_tar(path, files):
+    with tarfile.open(path, "w:gz") as tar:
+        for name, data in files.items():
+            info = tarfile.TarInfo(name)
+            info.size = len(data)
+            tar.addfile(info, io.BytesIO(data))
 
 
 def sample(path, *, remove_digest):
@@ -44,11 +53,7 @@ def sample(path, *, remove_digest):
     manifest = {"version": "v1.9.0", "episodes": 1, "episode_ids": [ID],
                 "files": {k: {"bytes": len(v), "sha256": hashlib.sha256(v).hexdigest()}
                           for k, v in streams.items()}}
-    with tarfile.open(path, "w:gz") as tar:
-        for name, data in {"MANIFEST.json": json.dumps(manifest).encode(), **streams, **media}.items():
-            info = tarfile.TarInfo(name)
-            info.size = len(data)
-            tar.addfile(info, io.BytesIO(data))
+    write_tar(path, {"MANIFEST.json": json.dumps(manifest).encode(), **streams, **media})
 
 
 class ReleaseToolsTest(unittest.TestCase):
@@ -163,6 +168,52 @@ class ReleaseToolsTest(unittest.TestCase):
             result = verify_tallies(altered)
             self.assertFalse(result["verified"])
             self.assertEqual(result["differences"], {"C/completed": {"declared": 2, "recorded": 1}})
+
+    def test_streamed_parent_rejects_corruption_outside_selection(self):
+        with TemporaryDirectory() as tmp:
+            t = Path(tmp)
+            source, exported, altered = (t / n for n in ("source.tar.gz", "sample.tar.gz", "altered.tar.gz"))
+            sample(source, remove_digest=False)
+            with tarfile.open(source) as archive:
+                files = {member.name: archive.extractfile(member).read() for member in archive}
+            manifest = json.loads(files["MANIFEST.json"])
+            other = "b" * 20
+            manifest["episodes"] = 2
+            manifest["episode_ids"].append(other)
+            for name in ("final_task_to_html.jsonl", "full_trajectory.jsonl"):
+                row = json.loads(files[name])
+                row["episode_id"] = other
+                files[name] += (json.dumps(row) + "\n").encode()
+                manifest["files"][name] = {"bytes": len(files[name]), "sha256": hashlib.sha256(files[name]).hexdigest()}
+            files["MANIFEST.json"] = json.dumps(manifest).encode()
+            write_tar(source, files)
+            export(source, (), {ID: None}, exported)
+            self.assertTrue(verify(source, exported)["verified"])
+            name = "final_task_to_html.jsonl"
+            first, second = files[name].splitlines()
+            files[name] = first + b"\n" + second.replace(b"completed", b"incomplete", 1) + b"\n"
+            write_tar(altered, files)
+            with self.assertRaisesRegex(ValueError, "SHA-256 differs from parent"):
+                verify(altered, exported)
+
+    def test_release_pin_preflight_requires_identical_embedded_metadata(self):
+        with TemporaryDirectory() as tmp:
+            t = Path(tmp)
+            source, manifest, sums = t / "source.tar.gz", t / "MANIFEST.json", t / "SHA256SUMS"
+            sample(source, remove_digest=False)
+            with tarfile.open(source) as archive:
+                manifest.write_bytes(archive.extractfile("MANIFEST.json").read())
+            def write_sums():
+                sums.write_text("".join(f"{hashlib.sha256(path.read_bytes()).hexdigest()}  {path.name}\n"
+                                        for path in (source, manifest)))
+            write_sums()
+            self.assertTrue(check_release(source, manifest, sums)["verified"])
+            manifest.write_bytes(manifest.read_bytes() + b"\n")
+            with self.assertRaisesRegex(ValueError, "Standalone MANIFEST.json SHA-256"):
+                check_release(source, manifest, sums)
+            write_sums()
+            with self.assertRaisesRegex(ValueError, "Standalone and embedded MANIFEST.json differ"):
+                check_release(source, manifest, sums)
 
     def test_base_planner_requires_primary_release_version(self):
         with TemporaryDirectory() as tmp:

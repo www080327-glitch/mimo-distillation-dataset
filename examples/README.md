@@ -112,3 +112,13 @@ python3 restore_replay_step.py RELEASE.tar.gz --episode EPISODE_ID --step 8 --ba
 python3 verify_abc_tallies.py RELEASE.tar.gz
 python3 smoke_replay_http.py portable.tar.gz --episode EPISODE_ID
 ```
+
+When you have the release's official checksum file, check the locally
+downloaded archive and its standalone manifest before using either:
+
+```sh
+python3 check_abc_release.py RELEASE.tar.gz MANIFEST.json SHA256SUMS
+```
+
+This verifies both pinned files and checks that the archive contains the
+same manifest. It does not download or run the archived projects.

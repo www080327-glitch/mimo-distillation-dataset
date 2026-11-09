@@ -281,6 +281,28 @@ def episode(ident, rows, assets, zips):
                            "projects": projects, "errors": sorted(errors)}
 
 
+def spool_row(line, stream, counts, requested, spool):
+    row = json.loads(line)
+    ident = row["episode_id"]
+    if not ID.fullmatch(ident):
+        raise ValueError(f"{stream}.jsonl: invalid episode ID")
+    counts[ident][stream] += 1
+    if requested is None or ident in requested:
+        with (spool / ident).open("ab") as output:
+            output.write(stream.encode("ascii") + b"\t" + line.rstrip(b"\r\n") + b"\n")
+
+
+def validate_index(manifest, counts, requested):
+    if (not counts or len(counts) != manifest["episodes"] or
+            any(row["full_trajectory"] != 1 or row["final_task_to_html"] != 1 for row in counts.values()) or
+            ("episode_ids" in manifest and set(manifest["episode_ids"]) != counts.keys())):
+        raise ValueError("Episode index differs from the recorded streams")
+    selected = counts if requested is None else requested
+    if not selected or selected.keys() - counts.keys():
+        raise ValueError("--ids must select episode IDs in this A/B/C archive")
+    return selected
+
+
 def load_groups(primary, manifest, requested, spool):
     counts = defaultdict(lambda: dict.fromkeys(STREAMS, 0))
     for stream in STREAMS:
@@ -294,22 +316,8 @@ def load_groups(primary, manifest, requested, spool):
             raise ValueError(f"{name}: size or SHA-256 differs from MANIFEST.json")
         with primary.open(name) as source:
             for line in source:
-                row = json.loads(line)
-                ident = row["episode_id"]
-                if not ID.fullmatch(ident):
-                    raise ValueError(f"{name}: invalid episode ID")
-                counts[ident][stream] += 1
-                if requested is None or ident in requested:
-                    with (spool / ident).open("ab") as output:
-                        output.write(stream.encode("ascii") + b"\t" + line.rstrip(b"\r\n") + b"\n")
-    if (not counts or len(counts) != manifest["episodes"] or
-            any(row["full_trajectory"] != 1 or row["final_task_to_html"] != 1 for row in counts.values()) or
-            ("episode_ids" in manifest and set(manifest["episode_ids"]) != counts.keys())):
-        raise ValueError("Episode index differs from the recorded streams")
-    selected = counts if requested is None else requested
-    if not selected or selected.keys() - counts.keys():
-        raise ValueError("--ids must select episode IDs in this A/B/C archive")
-    return selected
+                spool_row(line, stream, counts, requested, spool)
+    return validate_index(manifest, counts, requested)
 
 
 def read_spooled(path):
