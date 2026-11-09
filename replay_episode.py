@@ -249,6 +249,10 @@ def zipped(files):
             if (path.is_absolute() or ".." in path.parts or not path.parts
                     or "\\" in filename or ":" in filename):
                 raise ValueError(f"Unsupported project filename: {filename}")
+            if isinstance(text, tuple):
+                source_archive, member = text
+                with source_archive.extractfile(member) as source:
+                    text = source.read()
             archive.writestr(path.as_posix(), text)
     return buffer.getvalue()
 
@@ -258,7 +262,10 @@ def serve(port, pages, pngs, zips):
         def do_GET(self):
             route = self.path
             if route in pages:
-                data, mime = pages[route], "text/html; charset=utf-8"
+                data = pages[route]
+                if isinstance(data, Path):
+                    data = data.read_bytes()
+                mime = "text/html; charset=utf-8"
             elif route in pngs:
                 archive, member = pngs[route]
                 with archive.extractfile(member) as file:

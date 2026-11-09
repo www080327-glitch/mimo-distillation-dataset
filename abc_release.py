@@ -49,6 +49,10 @@ class Assets:
         self.archives, self.pngs = archives, pngs
         self.checked = {}
 
+    def member(self, name):
+        archive, _ = self.checked[name]
+        return archive.tar, archive.members[name]
+
     def get(self, ref):
         name, digest = ref["file"], ref["sha256"]
         match = ASSET.fullmatch(name)
@@ -130,8 +134,8 @@ def episode(ident, rows, assets, zips):
                 if (path.is_absolute() or not path.parts or ".." in path.parts
                         or path.as_posix() != filename or any(c in filename for c in "\\:\0")):
                     raise ValueError(f"Unsupported project filename: {filename!r}")
-                data = assets.get(ref)
-                files[filename] = data if render else None
+                assets.get(ref)
+                files[filename] = assets.member(ref["file"]) if render else None
             if not files:
                 raise ValueError("No project files recorded")
         except ValueError as exc:
@@ -186,7 +190,6 @@ def episode(ident, rows, assets, zips):
 
 def load_groups(primary, manifest, requested, spool):
     counts = defaultdict(lambda: dict.fromkeys(STREAMS, 0))
-    groups = defaultdict(lambda: {name: [] for name in STREAMS})
     for stream in STREAMS:
         name = stream + ".jsonl"
         expected = manifest["files"][name]
@@ -204,11 +207,8 @@ def load_groups(primary, manifest, requested, spool):
                     raise ValueError(f"{name}: invalid episode ID")
                 counts[ident][stream] += 1
                 if requested is None or ident in requested:
-                    if spool is None:
-                        groups[ident][stream].append(row)
-                    else:
-                        with (spool / ident).open("ab") as output:
-                            output.write(stream.encode("ascii") + b"\t" + line.rstrip(b"\r\n") + b"\n")
+                    with (spool / ident).open("ab") as output:
+                        output.write(stream.encode("ascii") + b"\t" + line.rstrip(b"\r\n") + b"\n")
     if (not counts or len(counts) != manifest["episodes"] or
             any(row["full_trajectory"] != 1 or row["final_task_to_html"] != 1 for row in counts.values()) or
             ("episode_ids" in manifest and set(manifest["episode_ids"]) != counts.keys())):
@@ -216,7 +216,7 @@ def load_groups(primary, manifest, requested, spool):
     selected = counts if requested is None else requested
     if not selected or selected.keys() - counts.keys():
         raise ValueError("--ids must select episode IDs in this A/B/C archive")
-    return selected, groups
+    return selected
 
 
 def read_spooled(path):
@@ -237,23 +237,30 @@ def run(args, serve):
         if not re.fullmatch(r"v1\.(?:[2-9]|[1-9][0-9]+)\.\d+", version) or manifest.get("schema_version", 1) != 1:
             raise ValueError(f"Unsupported A/B/C release format: {version}")
         render = args.port is not None
-        spool = None if render else Path(stack.enter_context(TemporaryDirectory()))
+        spool = Path(stack.enter_context(TemporaryDirectory()))
         requested = dict.fromkeys(args.ids.read_text().split()) if args.ids else None
-        selected, groups = load_groups(primary, manifest, requested, spool)
+        selected = load_groups(primary, manifest, requested, spool)
         pages, receipts, links = {}, [], []
         pngs = {} if render else None
         zips = {} if render else None
         assets = Assets([primary, *(Archive(stack, path) for path in args.base_tar)], pngs)
         for ident in selected:
-            rows = groups.pop(ident) if render else read_spooled(spool / ident)
+            row_path = spool / ident
+            rows = read_spooled(row_path)
+            row_path.unlink()
             body, receipt = episode(ident, rows, assets, zips)
+            assets.checked.clear()
+            del rows
             if render:
                 route = "/episode/" + ident
-                pages[route] = page(version, body)
+                row_path.write_bytes(page(version, body))
+                pages[route] = row_path
                 links.append(f'<li><a href="{route}">{ident}</a> · {escape(receipt["focus"])} · {escape(receipt["status"])}</li>')
             receipts.append(receipt)
         if render:
-            pages["/"] = page(version, "<h1>MiMo A/B/C episodes</h1><ol>" + "".join(links) + "</ol>")
+            index = spool / "index.html"
+            index.write_bytes(page(version, "<h1>MiMo A/B/C episodes</h1><ol>" + "".join(links) + "</ol>"))
+            pages["/"] = index
         if args.receipt:
             args.receipt.write_text(json.dumps({"release": version, "manifest_sha256": sha(raw),
                 "dependencies": manifest.get("dependencies", []), "episodes": receipts}, ensure_ascii=False, indent=2) + "\n")
