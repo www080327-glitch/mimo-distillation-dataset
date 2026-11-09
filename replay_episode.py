@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read selected v1.1.0 episodes and PNGs from verified Release assets."""
+"""Read episodes and PNGs from verified MiMo Release assets."""
 import argparse
 from collections import defaultdict
 import gzip
@@ -289,14 +289,30 @@ def serve(port, pages, pngs, zips):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("manifest", type=Path)
-    parser.add_argument("--ids", type=Path, default=Path(__file__).with_name("examples") / "v1.1.0-ids.txt")
+    parser.add_argument("--ids", type=Path)
+    parser.add_argument("--abc-tar", action="store_true", help="Read a v1.2.0 or later A/B/C release tar")
+    parser.add_argument("--base-tar", type=Path, action="append", default=[], help="Local prior A/B/C tar with shared assets")
     parser.add_argument("--media-dir", type=Path, action="append", default=[], help="Additional folders with rebuilt archives")
     parser.add_argument("--receipt", type=Path, help="Write recovery checks as JSON")
+    parser.add_argument("--strict", action="store_true", help="Return 1 after writing an A/B/C receipt with missing or invalid evidence")
     parser.add_argument("--port", type=int, help="Serve the selected episodes on loopback")
     args = parser.parse_args()
     if args.receipt is None and args.port is None:
         parser.error("Choose --receipt, --port, or both")
-    ids = dict.fromkeys(args.ids.read_text().split())
+    if args.strict and (not args.abc_tar or args.receipt is None or args.port is not None):
+        parser.error("--strict requires --abc-tar and --receipt, without --port")
+    if args.abc_tar:
+        import abc_release
+        if args.media_dir:
+            parser.error("--media-dir is only for the v1.1.0 reader")
+        try:
+            return abc_release.run(args, serve)
+        except (OSError, ValueError, KeyError, tarfile.TarError) as exc:
+            parser.error(f"A/B/C release: {exc}")
+    if args.base_tar:
+        parser.error("--base-tar requires --abc-tar")
+    ids_file = args.ids or Path(__file__).with_name("examples") / "v1.1.0-ids.txt"
+    ids = dict.fromkeys(ids_file.read_text().split())
     if not ids or any(not re.fullmatch(r"[0-9a-f]{64}", ident) for ident in ids):
         parser.error("--ids must list full lowercase Release episode IDs")
     manifest = json.loads(args.manifest.read_text())
@@ -329,6 +345,6 @@ def main():
 
 if __name__ == "__main__":
     try:
-        main()
+        raise SystemExit(main())
     except KeyboardInterrupt:
         pass

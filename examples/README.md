@@ -34,3 +34,16 @@ python3 reassemble_media.py sample-release/MANIFEST.json \
 python3 replay_episode.py sample-release/MANIFEST.json --ids my-ids.txt \
   --media-dir restored --port 11840
 ```
+
+## Open A/B/C releases (v1.2.0 and later)
+
+Download the tar and checksum from the [Releases page](https://github.com/www080327-glitch/mimo-distillation-dataset/releases). For an increment, download any base tars named by its manifest. Pass each one as a separate `--base-tar` argument.
+
+```sh
+python3 replay_episode.py mimo-nextgen-abc-v1.3.0.tar.gz --abc-tar \
+  --base-tar mimo-nextgen-abc-v1.tar.gz --port 11840
+```
+
+The viewer labels teacher input images separately from tool previews. It shows recorded edits and offers separate initial and retained project ZIPs when all their files are available. It doesn't execute the episode code. A missing base shows actionable errors; other recorded content remains readable.
+
+For release checks, use `--receipt recovery.json --strict` in place of `--port 11840`. A missing or invalid asset in a selected episode exits 1 after writing the receipt. Use `--ids` to select specific full episode IDs; omit it to inspect all episodes in the tar.
